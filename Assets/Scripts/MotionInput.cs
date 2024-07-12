@@ -28,6 +28,7 @@ public class MotionInput : MonoBehaviour
             return false;
         }
 
+        int start = indexFromEnd;
         int skips = 0;
 
         for (int i = 1; i <= requirements.Length; i++)
@@ -56,7 +57,7 @@ public class MotionInput : MonoBehaviour
             }
         }
 
-        if (currentFrame - inputs[^indexFromEnd].startFrame > maxInputLength)
+        if (currentFrame - inputs[^start].startFrame > maxInputLength)
         {
             return false;
         }
@@ -72,10 +73,16 @@ public class MotionInput : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        TestDirection[] requirements = new TestDirection[] {
+        TestDirection[] qfor_requirements = new TestDirection[] {
             new TestDirection(Direction.SOUTH, false),
             new TestDirection(Direction.SOUTHEAST, false),
             new TestDirection(Direction.EAST, false)
+        };
+
+        TestDirection[] qback_requirements = new TestDirection[] {
+            new TestDirection(Direction.SOUTH, false),
+            new TestDirection(Direction.SOUTHWEST, false),
+            new TestDirection(Direction.WEST, false)
         };
 
         List<UserDirection> inputs = new List<UserDirection>() {
@@ -84,7 +91,14 @@ public class MotionInput : MonoBehaviour
             new UserDirection(Direction.EAST, 5)
         };
 
-        print(testForMotionInput(requirements, inputs, inputs.Count, 0));
+        if (testForMotionInput(qfor_requirements, inputs, 1, 0))
+        {
+            print("qfor");
+        }
+        else if (testForMotionInput(qback_requirements, inputs, 1, 0))
+        {
+            print("qback");
+        }
 
         currentFrame++;
     }
