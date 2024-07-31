@@ -16,9 +16,92 @@ public enum Direction
 
 public class MotionInput : MonoBehaviour
 {
+    private static readonly TestDirection[] qfor_requirements = new TestDirection[] {
+        new TestDirection(Direction.SOUTH, false),
+        new TestDirection(Direction.SOUTHEAST, false),
+        new TestDirection(Direction.EAST, false)
+    };
+
+    private static readonly TestDirection[] qback_requirements = new TestDirection[] {
+        new TestDirection(Direction.SOUTH, false),
+        new TestDirection(Direction.SOUTHWEST, false),
+        new TestDirection(Direction.WEST, false)
+    };
+
+    private static readonly TestDirection[] dpfor_requirements = new TestDirection[] {
+        new TestDirection(Direction.EAST, false),
+        new TestDirection(Direction.SOUTHEAST, true),
+        new TestDirection(Direction.SOUTH, false),
+        new TestDirection(Direction.SOUTHEAST, false),
+        new TestDirection(Direction.EAST, true)
+    };
+
+    private static readonly TestDirection[] dpback_requirements = new TestDirection[] {
+        new TestDirection(Direction.WEST, false),
+        new TestDirection(Direction.SOUTHWEST, true),
+        new TestDirection(Direction.SOUTH, false),
+        new TestDirection(Direction.SOUTHWEST, false),
+        new TestDirection(Direction.WEST, true)
+    };
+
+    private static readonly TestDirection[] hfor_requirements = new TestDirection[] {
+        new TestDirection(Direction.WEST, false),
+        new TestDirection(Direction.SOUTHWEST, true),
+        new TestDirection(Direction.SOUTH, true),
+        new TestDirection(Direction.SOUTHEAST, true),
+        new TestDirection(Direction.EAST, false)
+    };
+
+    private static readonly TestDirection[] hback_requirements = new TestDirection[] {
+        new TestDirection(Direction.EAST, false),
+        new TestDirection(Direction.SOUTHEAST, true),
+        new TestDirection(Direction.SOUTH, true),
+        new TestDirection(Direction.SOUTHWEST, true),
+        new TestDirection(Direction.WEST, false)
+    };
+
+    private static readonly TestDirection[] doubleqfor_requirements = new TestDirection[] {
+        new TestDirection(Direction.SOUTH, false),
+        new TestDirection(Direction.SOUTHEAST, true),
+        new TestDirection(Direction.EAST, false),
+        new TestDirection(Direction.SOUTH, true),
+        new TestDirection(Direction.SOUTHEAST, true),
+        new TestDirection(Direction.EAST, true)
+    };
+
+    private static readonly TestDirection[] doubleqback_requirements = new TestDirection[] {
+        new TestDirection(Direction.SOUTH, false),
+        new TestDirection(Direction.SOUTHWEST, true),
+        new TestDirection(Direction.WEST, false),
+        new TestDirection(Direction.SOUTH, true),
+        new TestDirection(Direction.SOUTHWEST, true),
+        new TestDirection(Direction.WEST, true)
+    };
+    
+    /*
+    private static readonly TestDirection[] hplus_requirements = new TestDirection[] {
+        new TestDirection(Direction.EAST, false),
+        new TestDirection(Direction.SOUTHEAST, true),
+        new TestDirection(Direction.SOUTH, false),
+        new TestDirection(Direction.SOUTHWEST, true),
+        new TestDirection(Direction.WEST, false),
+        new TestDirection(Direction.EAST, false)
+    };
+
+    private static readonly TestDirection[] althplus_requirements = new TestDirection[] {
+        new TestDirection(Direction.EAST, false),
+        new TestDirection(Direction.SOUTHEAST, false),
+        new TestDirection(Direction.SOUTH, true),
+        new TestDirection(Direction.SOUTHWEST, false),
+        new TestDirection(Direction.WEST, false),
+        new TestDirection(Direction.EAST, false)
+    };
+    */
+
     public static readonly int maxInputLength = 20;
     public static readonly int maxBufferLength = 15;
-    public int currentFrame = 1;
+
+    private int currentFrame = 1;
 
     // public GameManager gameManager; // should be a script with int values currentFrame and effectiveCurrFrame
 
@@ -58,17 +141,56 @@ public class MotionInput : MonoBehaviour
             }
         }
 
-        //print(inputs[^startIndex].startFrame);
-
-        if (/*inputs[^startIndex].startFrame - inputs[^(inputIndex - 1)].startFrame > maxInputLength*/
+        if (inputs[^startIndex].startFrame - inputs[^(inputIndex - 1)].startFrame > maxInputLength &&
             currentFrame - inputs[^startIndex].startFrame > maxBufferLength)
         {
-            print(currentFrame);
             return false;
         }
 
+        print(currentFrame);
         return true;
     }
+
+    public void findMotionInInput(List<UserDirection> inputs, int index)
+    {
+        if (testForMotionInput(doubleqfor_requirements, inputs, index, 2))
+        {
+            print("doubleqfor");
+        }
+        else if (testForMotionInput(doubleqback_requirements, inputs, index, 2))
+        {
+            print("doubleqback");
+        }
+        else if (testForMotionInput(hfor_requirements, inputs, index, 1))
+        {
+            print("hfor");
+        }
+        else if (testForMotionInput(hback_requirements, inputs, index, 1))
+        {
+            print("hback");
+        }
+        else if (testForMotionInput(dpfor_requirements, inputs, index, 2))
+        {
+            print("dpfor");
+        }
+        else if (testForMotionInput(dpback_requirements, inputs, index, 2))
+        {
+            print("dpback");
+        }
+        else if (testForMotionInput(qfor_requirements, inputs, index, 0))
+        {
+            print("qfor");
+        }
+        else if (testForMotionInput(qback_requirements, inputs, index, 0))
+        {
+            print("qback");
+        }
+        else
+        {
+            print("none");
+        }
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -78,125 +200,17 @@ public class MotionInput : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        TestDirection[] qfor_requirements = new TestDirection[] {
-            new TestDirection(Direction.SOUTH, false),
-            new TestDirection(Direction.SOUTHEAST, false),
-            new TestDirection(Direction.EAST, false)
+        List<UserDirection> user_inputs = new List<UserDirection>() {
+            new UserDirection(Direction.EAST, 3),
+            new UserDirection(Direction.SOUTHEAST, 5),
+            new UserDirection(Direction.SOUTH, 5),
+            new UserDirection(Direction.SOUTHEAST, 5),
+            // new UserDirection(Direction.EAST, 22)
         };
 
-        TestDirection[] qback_requirements = new TestDirection[] {
-            new TestDirection(Direction.SOUTH, false),
-            new TestDirection(Direction.SOUTHWEST, false),
-            new TestDirection(Direction.WEST, false)
-        };
+        findMotionInInput(user_inputs, 1);
 
-        TestDirection[] dpfor_requirements = new TestDirection[] {
-            new TestDirection(Direction.EAST, false),
-            new TestDirection(Direction.SOUTHEAST, true),
-            new TestDirection(Direction.SOUTH, false),
-            new TestDirection(Direction.SOUTHEAST, false),
-            new TestDirection(Direction.EAST, true)
-        };
-
-        TestDirection[] dpback_requirements = new TestDirection[] {
-            new TestDirection(Direction.WEST, false),
-            new TestDirection(Direction.SOUTHWEST, true),
-            new TestDirection(Direction.SOUTH, false),
-            new TestDirection(Direction.SOUTHWEST, false),
-            new TestDirection(Direction.WEST, true)
-        };
-
-        TestDirection[] hfor_requirements = new TestDirection[] {
-            new TestDirection(Direction.WEST, false),
-            new TestDirection(Direction.SOUTHWEST, true),
-            new TestDirection(Direction.SOUTH, true),
-            new TestDirection(Direction.SOUTHEAST, true),
-            new TestDirection(Direction.EAST, false)
-        };
-
-        TestDirection[] hback_requirements = new TestDirection[] {
-            new TestDirection(Direction.EAST, false),
-            new TestDirection(Direction.SOUTHEAST, true),
-            new TestDirection(Direction.SOUTH, true),
-            new TestDirection(Direction.SOUTHWEST, true),
-            new TestDirection(Direction.WEST, false)
-        };
-
-        TestDirection[] doubleqfor_requirements = new TestDirection[] {
-            new TestDirection(Direction.SOUTH, false),
-            new TestDirection(Direction.SOUTHEAST, true),
-            new TestDirection(Direction.EAST, false),
-            new TestDirection(Direction.SOUTH, true),
-            new TestDirection(Direction.SOUTHEAST, true),
-            new TestDirection(Direction.EAST, true)
-        };
-
-        TestDirection[] doubleqback_requirements = new TestDirection[] {
-            new TestDirection(Direction.SOUTH, false),
-            new TestDirection(Direction.SOUTHWEST, true),
-            new TestDirection(Direction.WEST, false),
-            new TestDirection(Direction.SOUTH, true),
-            new TestDirection(Direction.SOUTHWEST, true),
-            new TestDirection(Direction.WEST, true)
-        };
-
-        /*
-        TestDirection[] hplusfor_requirements = new TestDirection[] {
-            new TestDirection(Direction.EAST, false),
-            new TestDirection(Direction.SOUTHEAST, true),
-            new TestDirection(Direction.SOUTH, true),
-            new TestDirection(Direction.SOUTHWEST, true),
-            new TestDirection(Direction.WEST, false),
-            new TestDirection(Direction.EAST, false)
-        };
-        */
-
-        List<UserDirection> inputs = new List<UserDirection>() {
-            new UserDirection(Direction.SOUTH, 1),
-            new UserDirection(Direction.WEST, 1),
-            new UserDirection(Direction.SOUTH, 1),
-            new UserDirection(Direction.SOUTHWEST, 1),
-            new UserDirection(Direction.WEST, 2)
-        };
-
-        if (testForMotionInput(doubleqfor_requirements, inputs, 1, 2))
-        {
-            print("doubleqfor");
-        }
-        else if (testForMotionInput(doubleqback_requirements, inputs, 1, 2))
-        {
-            print("doubleqback");
-        }
-        else if (testForMotionInput(hfor_requirements, inputs, 1, 1))
-        {
-            print("hfor");
-        }
-        else if (testForMotionInput(hback_requirements, inputs, 1, 1))
-        {
-            print("hback");
-        }
-        else if (testForMotionInput(dpfor_requirements, inputs, 1, 2))
-        {
-            print("dpfor");
-        }
-        else if (testForMotionInput(dpback_requirements, inputs, 1, 2))
-        {
-            print("dpback");
-        }
-        else if (testForMotionInput(qfor_requirements, inputs, 1, 0))
-        {
-            print("qfor");
-        }
-        else if (testForMotionInput(qback_requirements, inputs, 1, 0))
-        {
-            print("qback");
-        }
-        else
-        {
-            print("none");
-        }
-        
-        currentFrame++;
+        // currentFrame++;
     }
 }
 
