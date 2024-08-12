@@ -151,7 +151,7 @@ public class MotionInput : MonoBehaviour
         return true;
     }
 
-    public void findMotionInInput(List<UserDirection> inputs, int index)
+    public void readMotionFromInputs(List<UserDirection> inputs, int index)
     {
         if (testForMotionInput(doubleqfor_requirements, inputs, index, 2))
         {
@@ -208,7 +208,7 @@ public class MotionInput : MonoBehaviour
             // new UserDirection(Direction.EAST, 22)
         };
 
-        findMotionInInput(user_inputs, 1);
+        readMotionFromInputs(user_inputs, 1);
 
         // currentFrame++;
     }
