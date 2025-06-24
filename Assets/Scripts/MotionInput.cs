@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public enum Direction
 {
@@ -11,7 +12,21 @@ public enum Direction
     SOUTH,
     SOUTHWEST,
     WEST,
-    NORTHWEST
+    NORTHWEST,
+    NONE
+}
+
+public enum MotionType
+{
+    NONE,
+    QFOR,
+    QBACK,
+    DPFOR,
+    DPBACK,
+    HFOR,
+    HBACK,
+    DOUBLEQFOR,
+    DOUBLEQBACK
 }
 
 public class MotionInput : MonoBehaviour
@@ -77,7 +92,7 @@ public class MotionInput : MonoBehaviour
         new TestDirection(Direction.SOUTHWEST, true),
         new TestDirection(Direction.WEST, true)
     };
-    
+
     /*
     private static readonly TestDirection[] hplus_requirements = new TestDirection[] {
         new TestDirection(Direction.EAST, false),
@@ -98,16 +113,43 @@ public class MotionInput : MonoBehaviour
     };
     */
 
+    // public GameManager gameManager; // should be a script with int values currentFrame and effectiveCurrFrame
+    
     public static readonly int maxInputLength = 20;
     public static readonly int maxBufferLength = 15;
 
-    private int currentFrame = 1;
+    private int currentFrame = 0;
 
-    // public GameManager gameManager; // should be a script with int values currentFrame and effectiveCurrFrame
+    private Vector2 playerInput;
 
-    public bool testForMotionInput(TestDirection[] requirements, List<UserDirection> inputs, int inputIndex, int validSkips)
+    private List<UserDirection> userInputs = new List<UserDirection>();
+
+    private Direction CalcDirection(Vector2 input)
     {
-        if (inputIndex > inputs.Count)
+        if (input == Vector2.zero)
+        {
+            return Direction.NONE;
+        }
+
+        float angle = VectorFunctions.GetVectorAngle(input);
+        return angle switch
+        {
+            > 337.5f or <= 22.5f => Direction.EAST,
+            > 22.5f and <= 67.5f => Direction.NORTHEAST,
+            > 67.5f and <= 112.5f => Direction.NORTH,
+            > 112.5f and <= 157.5f => Direction.NORTHWEST,
+            > 157.5f and <= 202.5f => Direction.WEST,
+            > 202.5f and <= 247.5f => Direction.SOUTHWEST,
+            > 247.5f and <= 292.5f => Direction.SOUTH,
+            > 292.5f and <= 337.5f => Direction.SOUTHEAST,
+            _ => Direction.NONE
+        };
+    }
+
+    public bool TestForMotionInput(TestDirection[] requirements, List<UserDirection> inputs, int inputIndex, int validSkips)
+    {
+        if (inputIndex > inputs.Count ||
+            currentFrame - inputs[^inputIndex].startFrame > maxBufferLength)
         {
             return false;
         }
@@ -132,6 +174,7 @@ public class MotionInput : MonoBehaviour
 
                 if (skips > validSkips)
                 {
+                    //print($"prints: {currentFrame}");
                     return false;
                 }
             }
@@ -141,8 +184,7 @@ public class MotionInput : MonoBehaviour
             }
         }
 
-        if (inputs[^startIndex].startFrame - inputs[^(inputIndex - 1)].startFrame > maxInputLength &&
-            currentFrame - inputs[^startIndex].startFrame > maxBufferLength)
+        if (inputs[^startIndex].startFrame - inputs[^(inputIndex - 1)].startFrame > maxInputLength)
         {
             return false;
         }
@@ -151,66 +193,81 @@ public class MotionInput : MonoBehaviour
         return true;
     }
 
-    public void readMotionFromInputs(List<UserDirection> inputs, int index)
+    public MotionType ReadMotionFromInputs(List<UserDirection> inputs, int startIndex)
     {
-        if (testForMotionInput(doubleqfor_requirements, inputs, index, 2))
+        if (TestForMotionInput(doubleqfor_requirements, inputs, startIndex, 2))
         {
-            print("doubleqfor");
+            return MotionType.DOUBLEQFOR;
         }
-        else if (testForMotionInput(doubleqback_requirements, inputs, index, 2))
+        else if (TestForMotionInput(doubleqback_requirements, inputs, startIndex, 2))
         {
-            print("doubleqback");
+            return MotionType.DOUBLEQBACK;
         }
-        else if (testForMotionInput(hfor_requirements, inputs, index, 1))
+        else if (TestForMotionInput(hfor_requirements, inputs, startIndex, 1))
         {
-            print("hfor");
+            return MotionType.HFOR;
         }
-        else if (testForMotionInput(hback_requirements, inputs, index, 1))
+        else if (TestForMotionInput(hback_requirements, inputs, startIndex, 1))
         {
-            print("hback");
+            return MotionType.HBACK;
         }
-        else if (testForMotionInput(dpfor_requirements, inputs, index, 2))
+        else if (TestForMotionInput(dpfor_requirements, inputs, startIndex, 2))
         {
-            print("dpfor");
+            return MotionType.DPFOR;
         }
-        else if (testForMotionInput(dpback_requirements, inputs, index, 2))
+        else if (TestForMotionInput(dpback_requirements, inputs, startIndex, 2))
         {
-            print("dpback");
+            return MotionType.DPBACK;
         }
-        else if (testForMotionInput(qfor_requirements, inputs, index, 0))
+        else if (TestForMotionInput(qfor_requirements, inputs, startIndex, 0))
         {
-            print("qfor");
+            return MotionType.QFOR;
         }
-        else if (testForMotionInput(qback_requirements, inputs, index, 0))
+        else if (TestForMotionInput(qback_requirements, inputs, startIndex, 0))
         {
-            print("qback");
+            return MotionType.QBACK;
         }
         else
         {
-            print("none");
+            return MotionType.NONE;
         }
     }
 
+    private void OnMove(InputValue moveValue)
+    {
+        playerInput = moveValue.Get<Vector2>();
+    }
+
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         
     }
 
     // Update is called once per frame
-    void FixedUpdate()
+    private void FixedUpdate()
     {
-        List<UserDirection> user_inputs = new List<UserDirection>() {
-            new UserDirection(Direction.EAST, 3),
-            new UserDirection(Direction.SOUTHEAST, 5),
-            new UserDirection(Direction.SOUTH, 5),
-            new UserDirection(Direction.SOUTHEAST, 5),
-            // new UserDirection(Direction.EAST, 22)
+        /*
+        userInputs = new List<UserDirection>() {
+            new UserDirection(Direction.EAST, 2),
+            new UserDirection(Direction.SOUTHEAST, 2),
+            new UserDirection(Direction.SOUTH, 17),
+            new UserDirection(Direction.SOUTHEAST, 17),
+            new UserDirection(Direction.EAST, 17)
         };
+        */
 
-        readMotionFromInputs(user_inputs, 1);
+        Direction direction = CalcDirection(playerInput);
+        if (userInputs.Count == 0 || userInputs[^1].direction != direction)
+        {
+            userInputs.Add(new UserDirection(direction, currentFrame));
+        }
 
-        // currentFrame++;
+        //print(direction);
+        //print(currentFrame);
+        print(ReadMotionFromInputs(userInputs, 1));
+
+        currentFrame++;
     }
 }
 
@@ -235,5 +292,10 @@ public class UserDirection
     {
         this.direction = direction;
         this.startFrame = startFrame;
+    }
+
+    public override string ToString()
+    {
+        return $"User direction {direction} starting on frame {startFrame}";
     }
 }
