@@ -115,14 +115,14 @@ public class MotionInput : MonoBehaviour
 
     // public GameManager gameManager; // should be a script with int values currentFrame and effectiveCurrFrame
     
-    public static readonly int maxInputLength = 20;
-    public static readonly int maxBufferLength = 15;
+    public static readonly int maxInputLength = 15;
+    public static readonly int maxBufferLength = 3;
 
     private int currentFrame = 0;
 
     private Vector2 playerInput;
-
     private List<UserDirection> userInputs = new List<UserDirection>();
+    private UserMotion userMotion = new UserMotion(MotionType.NONE, 0);
 
     private Direction CalcDirection(Vector2 input)
     {
@@ -148,8 +148,7 @@ public class MotionInput : MonoBehaviour
 
     public bool TestForMotionInput(TestDirection[] requirements, List<UserDirection> inputs, int inputIndex, int validSkips)
     {
-        if (inputIndex > inputs.Count ||
-            currentFrame - inputs[^inputIndex].startFrame > maxBufferLength)
+        if (inputIndex > inputs.Count)
         {
             return false;
         }
@@ -174,7 +173,7 @@ public class MotionInput : MonoBehaviour
 
                 if (skips > validSkips)
                 {
-                    //print($"prints: {currentFrame}");
+                    // print($"prints: {currentFrame}");
                     return false;
                 }
             }
@@ -184,17 +183,22 @@ public class MotionInput : MonoBehaviour
             }
         }
 
-        if (inputs[^startIndex].startFrame - inputs[^(inputIndex - 1)].startFrame > maxInputLength)
+        if (inputs[^startIndex].startFrame - inputs[^(inputIndex - 1)].startFrame >= maxInputLength)
         {
             return false;
         }
 
-        print(currentFrame);
+        // print(inputs[^startIndex].startFrame - inputs[^(inputIndex - 1)].startFrame);
         return true;
     }
 
     public MotionType ReadMotionFromInputs(List<UserDirection> inputs, int startIndex)
     {
+        if (currentFrame - inputs[^startIndex].startFrame >= maxBufferLength)
+        {
+            return MotionType.NONE;
+        }
+
         if (TestForMotionInput(doubleqfor_requirements, inputs, startIndex, 2))
         {
             return MotionType.DOUBLEQFOR;
@@ -233,6 +237,27 @@ public class MotionInput : MonoBehaviour
         }
     }
 
+    public MotionType ScanListForMotion(List<UserDirection> directions)
+    {
+        MotionType motion;
+        for (int i = 1; i <= maxBufferLength; i++)
+        {
+            if (directions.Count < i)
+            {
+                // return if accessing directions[^i] would cause an out-of-bounds error
+                return MotionType.NONE;
+            }
+
+            motion = ReadMotionFromInputs(userInputs, i);
+            if (motion != MotionType.NONE)
+            {
+                return motion;
+            }
+        }
+
+        return MotionType.NONE;
+    }
+
     private void OnMove(InputValue moveValue)
     {
         playerInput = moveValue.Get<Vector2>();
@@ -263,11 +288,33 @@ public class MotionInput : MonoBehaviour
             userInputs.Add(new UserDirection(direction, currentFrame));
         }
 
+        MotionType motion = ScanListForMotion(userInputs);
+        if (motion != userMotion.motion)
+        {
+            userMotion = new UserMotion(motion, currentFrame);
+        }
+
+        /*
+
+        MotionType motion = ReadMotionFromInputs(userInputs, 1);
+        if (motion != MotionType.NONE && userMotion.motion != motion)
+        {
+            userMotion = new UserMotion(motion, currentFrame);
+        }
+        else if (userMotion.motion != MotionType.NONE && currentFrame - userMotion.startFrame >= maxBufferLength)
+        {
+            userMotion = new UserMotion(MotionType.NONE, currentFrame);
+        }
+
+        */
+
+        print(userMotion);
+
         //print(direction);
         //print(currentFrame);
-        print(ReadMotionFromInputs(userInputs, 1));
+        //print(ScanListForMotion(userInputs));
 
-        currentFrame++;
+        currentFrame++; // update frame tracker for next frame
     }
 }
 
@@ -296,6 +343,23 @@ public class UserDirection
 
     public override string ToString()
     {
-        return $"User direction {direction} starting on frame {startFrame}";
+        return $"{direction}; frame {startFrame}";
+    }
+}
+
+public class UserMotion
+{
+    public MotionType motion { get; }
+    public int startFrame { get; }
+
+    public UserMotion(MotionType motion, int startFrame)
+    {
+        this.motion = motion;
+        this.startFrame = startFrame;
+    }
+
+    public override string ToString()
+    {
+        return $"{motion}; frame {startFrame}";
     }
 }
