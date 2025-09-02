@@ -118,7 +118,7 @@ public class MotionInput : MonoBehaviour
     public static readonly int maxInputLength = 15;
     public static readonly int maxBufferLength = 3;
 
-    private int currentFrame = 0;
+    [HideInInspector] public static int currentFrame = 0;
 
     private Vector2 playerInput;
     private List<UserDirection> userInputs = new List<UserDirection>();
@@ -158,7 +158,7 @@ public class MotionInput : MonoBehaviour
 
         for (int i = 1; i <= requirements.Length; i++)
         {
-            if (inputIndex > inputs.Count) // add a limiter to prevent iterating over every value in inputs
+            if (inputIndex > inputs.Count) // end search if end of inputs is reached
             {
                 return false;
             }
@@ -308,7 +308,7 @@ public class MotionInput : MonoBehaviour
 
         */
 
-        print(userMotion);
+        //print(userMotion);
 
         //print(direction);
         //print(currentFrame);
