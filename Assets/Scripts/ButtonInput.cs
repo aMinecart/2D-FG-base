@@ -18,39 +18,67 @@ public enum ButtonType
 
 public class ButtonInput : MonoBehaviour
 {
-    private List<ButtonType> button;
+    private List<ButtonType> buttons = new List<ButtonType>();
     private List<UserButton> userButtons = new List<UserButton>();
 
     private void OnPunch(InputValue pValue)
     {
         if (pValue.isPressed)
         {
-            button.Add(ButtonType.PUNCH);
+            buttons.Add(ButtonType.PUNCH);
         }
         else
         {
-            button.Remove(ButtonType.PUNCH);
+            buttons.Remove(ButtonType.PUNCH);
         }
     }
 
-    private void OnKick()
+    private void OnKick(InputValue kValue)
     {
-        //button.Add(ButtonType.KICK);
+        if (kValue.isPressed)
+        {
+            buttons.Add(ButtonType.KICK);
+        }
+        else
+        {
+            buttons.Remove(ButtonType.KICK);
+        }
     }
 
-    private void OnMedium()
+    private void OnMedium(InputValue mValue)
     {
-        //button.Add(ButtonType.MEDIUM);
+        if (mValue.isPressed)
+        {
+            buttons.Add(ButtonType.MEDIUM);
+        }
+        else
+        {
+            buttons.Remove(ButtonType.MEDIUM);
+        }
     }
 
-    private void OnHeavy()
+    private void OnHeavy(InputValue hValue)
     {
-        //button.Add(ButtonType.HEAVY);
+        if (hValue.isPressed)
+        {
+            buttons.Add(ButtonType.HEAVY);
+        }
+        else
+        {
+            buttons.Remove(ButtonType.HEAVY);
+        }
     }
 
-    private void OnWipe()
+    private void OnWipe(InputValue wValue)
     {
-        //button.Add(ButtonType.WIPE);
+        if (wValue.isPressed)
+        {
+            buttons.Add(ButtonType.WIPE);
+        }
+        else
+        {
+            buttons.Remove(ButtonType.HEAVY);
+        }
     }
 
     // Start is called before the first frame update
@@ -62,28 +90,28 @@ public class ButtonInput : MonoBehaviour
     // Update is called once per frame
     private void FixedUpdate()
     {
-        if (userButtons.Count == 0 || userButtons[^1].button != button)
+        if (userButtons.Count == 0 || userButtons[^1].buttons != buttons)
         {
-            userButtons.Add(new UserButton(button, MotionInput.currentFrame));
+            userButtons.Add(new UserButton(buttons, MotionInput.currentFrame));
         }
 
-        print(userButtons[^1]);
+        print(userButtons[^1].buttons);
     }
 }
 
 public class UserButton
 {
-    public List<ButtonType> button { get; }
+    public List<ButtonType> buttons { get; }
     public int startFrame { get; }
 
-    public UserButton(List<ButtonType> button, int startFrame)
+    public UserButton(List<ButtonType> buttons, int startFrame)
     {
-        this.button = button;
+        this.buttons = buttons;
         this.startFrame = startFrame;
     }
 
     public override string ToString()
     {
-        return $"{button}; frame {startFrame}";
+        return $"{buttons}; frame {startFrame}";
     }
 }
