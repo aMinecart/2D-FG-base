@@ -77,7 +77,7 @@ public class ButtonInput : MonoBehaviour
         }
         else
         {
-            buttons.Remove(ButtonType.HEAVY);
+            buttons.Remove(ButtonType.WIPE);
         }
     }
 
@@ -95,7 +95,7 @@ public class ButtonInput : MonoBehaviour
             userButtons.Add(new UserButton(buttons, MotionInput.currentFrame));
         }
 
-        print(userButtons[^1].buttons);
+        print(userButtons[^1]);
     }
 }
 
@@ -112,6 +112,12 @@ public class UserButton
 
     public override string ToString()
     {
-        return $"{buttons}; frame {startFrame}";
+        string types = "";
+        foreach (ButtonType type in buttons)
+        {
+            types += type + " ";
+        }
+
+        return $"{types}; frame {startFrame}";
     }
 }
