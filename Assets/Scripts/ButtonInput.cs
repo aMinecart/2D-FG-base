@@ -18,8 +18,43 @@ public enum ButtonType
 
 public class ButtonInput : MonoBehaviour
 {
+    [SerializeField] private MotionInput motionTracker;
     private List<ButtonType> buttons = new List<ButtonType>();
     private List<UserButton> userButtons = new List<UserButton>();
+
+    /*
+    private bool IsButtonActive(ButtonType type)
+    {
+        foreach (ButtonType button in userButtons[^1].buttons)
+        {
+            if (button == type)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    */
+
+    private bool IsButtonActive(ButtonType type, int tolerance = 0)
+    {
+        if (userButtons[^1].startFrame < motionTracker.currentFrame - tolerance)
+        {
+            //print($"{userButtons[^1].startFrame}, {motionTracker.currentFrame}");
+            return false;
+        }
+
+        foreach (ButtonType button in userButtons[^1].buttons)
+        {
+            if (button == type)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     private void OnPunch(InputValue pValue)
     {
@@ -84,27 +119,29 @@ public class ButtonInput : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
-        
+        motionTracker = GetComponent<MotionInput>();
     }
 
     // Update is called once per frame
     private void FixedUpdate()
     {
-        if (userButtons.Count == 0 || userButtons[^1].buttons != buttons)
+        if (userButtons.Count == 0 || userButtons[^1].buttons != buttons.ToArray())
         {
-            userButtons.Add(new UserButton(buttons, MotionInput.currentFrame));
+            userButtons.Add(new UserButton(buttons.ToArray(), motionTracker.currentFrame));
         }
 
+        //print(userButtons.Count);
+        //print(IsButtonActive(ButtonType.MEDIUM));
         print(userButtons[^1]);
     }
 }
 
 public class UserButton
 {
-    public List<ButtonType> buttons { get; }
+    public ButtonType[] buttons { get; }
     public int startFrame { get; }
 
-    public UserButton(List<ButtonType> buttons, int startFrame)
+    public UserButton(ButtonType[] buttons, int startFrame)
     {
         this.buttons = buttons;
         this.startFrame = startFrame;

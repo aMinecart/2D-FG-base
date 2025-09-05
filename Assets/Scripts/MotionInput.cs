@@ -118,7 +118,7 @@ public class MotionInput : MonoBehaviour
     public static readonly int maxInputLength = 15;
     public static readonly int maxBufferLength = 3;
 
-    [HideInInspector] public static int currentFrame = 0;
+    [HideInInspector] public int currentFrame = 0;
 
     private Vector2 playerInput;
     private List<UserDirection> userInputs = new List<UserDirection>();
