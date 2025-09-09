@@ -121,8 +121,8 @@ public class MotionInput : MonoBehaviour
     [HideInInspector] public int currentFrame = 0;
 
     private Vector2 playerInput;
-    private List<UserDirection> userInputs = new List<UserDirection>();
-    private UserMotion userMotion = new UserMotion(MotionType.NONE, 0);
+    private List<DirectionRecord> inputRecord = new List<DirectionRecord>();
+    private MotionRecord userMotion = new MotionRecord(MotionType.NONE, 0);
 
     private Direction CalcDirection(Vector2 input)
     {
@@ -146,7 +146,7 @@ public class MotionInput : MonoBehaviour
         };
     }
 
-    public bool TestForMotionInput(TestDirection[] requirements, List<UserDirection> inputs, int inputIndex, int validSkips)
+    public bool TestForMotionInput(TestDirection[] requirements, List<DirectionRecord> inputs, int inputIndex, int validSkips)
     {
         if (inputIndex > inputs.Count)
         {
@@ -192,7 +192,7 @@ public class MotionInput : MonoBehaviour
         return true;
     }
 
-    public MotionType ReadMotionFromInputs(List<UserDirection> inputs, int startIndex)
+    public MotionType ReadMotionFromInputs(List<DirectionRecord> inputs, int startIndex)
     {
         if (currentFrame - inputs[^startIndex].startFrame >= maxBufferLength)
         {
@@ -237,7 +237,7 @@ public class MotionInput : MonoBehaviour
         }
     }
 
-    public MotionType ScanListForMotion(List<UserDirection> directions)
+    public MotionType ScanListForMotion(List<DirectionRecord> directions)
     {
         MotionType motion;
         for (int i = 1; i <= maxBufferLength; i++)
@@ -248,7 +248,7 @@ public class MotionInput : MonoBehaviour
                 return MotionType.NONE;
             }
 
-            motion = ReadMotionFromInputs(userInputs, i);
+            motion = ReadMotionFromInputs(inputRecord, i);
             if (motion != MotionType.NONE)
             {
                 return motion;
@@ -273,37 +273,37 @@ public class MotionInput : MonoBehaviour
     private void FixedUpdate()
     {
         /*
-        userInputs = new List<UserDirection>() {
-            new UserDirection(Direction.EAST, 2),
-            new UserDirection(Direction.SOUTHEAST, 2),
-            new UserDirection(Direction.SOUTH, 17),
-            new UserDirection(Direction.SOUTHEAST, 17),
-            new UserDirection(Direction.EAST, 17)
+        inputRecord = new List<DirectionRecord>() {
+            new DirectionRecord(Direction.EAST, 2),
+            new DirectionRecord(Direction.SOUTHEAST, 2),
+            new DirectionRecord(Direction.SOUTH, 17),
+            new DirectionRecord(Direction.SOUTHEAST, 17),
+            new DirectionRecord(Direction.EAST, 17)
         };
         */
 
         Direction direction = CalcDirection(playerInput);
-        if (userInputs.Count == 0 || userInputs[^1].direction != direction)
+        if (inputRecord.Count == 0 || inputRecord[^1].direction != direction)
         {
-            userInputs.Add(new UserDirection(direction, currentFrame));
+            inputRecord.Add(new DirectionRecord(direction, currentFrame));
         }
 
-        MotionType motion = ScanListForMotion(userInputs);
+        MotionType motion = ScanListForMotion(inputRecord);
         if (motion != userMotion.motion)
         {
-            userMotion = new UserMotion(motion, currentFrame);
+            userMotion = new MotionRecord(motion, currentFrame);
         }
 
         /*
 
-        MotionType motion = ReadMotionFromInputs(userInputs, 1);
+        MotionType motion = ReadMotionFromInputs(inputRecord, 1);
         if (motion != MotionType.NONE && userMotion.motion != motion)
         {
-            userMotion = new UserMotion(motion, currentFrame);
+            userMotion = new MotionRecord(motion, currentFrame);
         }
         else if (userMotion.motion != MotionType.NONE && currentFrame - userMotion.startFrame >= maxBufferLength)
         {
-            userMotion = new UserMotion(MotionType.NONE, currentFrame);
+            userMotion = new MotionRecord(MotionType.NONE, currentFrame);
         }
 
         */
@@ -312,7 +312,7 @@ public class MotionInput : MonoBehaviour
 
         //print(direction);
         //print(currentFrame);
-        //print(ScanListForMotion(userInputs));
+        //print(ScanListForMotion(inputRecord));
 
         currentFrame++; // update frame tracker for next frame
     }
@@ -330,12 +330,12 @@ public class TestDirection
     }
 }
 
-public class UserDirection
+public class DirectionRecord
 {
     public Direction direction { get; }
     public int startFrame { get; }
 
-    public UserDirection(Direction direction, int startFrame)
+    public DirectionRecord(Direction direction, int startFrame)
     {
         this.direction = direction;
         this.startFrame = startFrame;
@@ -347,12 +347,12 @@ public class UserDirection
     }
 }
 
-public class UserMotion
+public class MotionRecord
 {
     public MotionType motion { get; }
     public int startFrame { get; }
 
-    public UserMotion(MotionType motion, int startFrame)
+    public MotionRecord(MotionType motion, int startFrame)
     {
         this.motion = motion;
         this.startFrame = startFrame;

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -19,13 +20,20 @@ public enum ButtonType
 public class ButtonInput : MonoBehaviour
 {
     [SerializeField] private MotionInput motionTracker;
-    private List<ButtonType> buttons = new List<ButtonType>();
-    private List<UserButton> userButtons = new List<UserButton>();
+    private List<ButtonRecord> userButtons = new List<ButtonRecord>();
+
+    private List<ButtonType> buttonAddLog = new List<ButtonType>();
+    private List<ButtonType> buttonRemoveLog = new List<ButtonType>();
+
+    private List<ButtonType> activeButtons = new List<ButtonType>();
+    private List<ButtonType> currentButtons = new List<ButtonType>();
+    
+
 
     /*
     private bool IsButtonActive(ButtonType type)
     {
-        foreach (ButtonType button in userButtons[^1].buttons)
+        foreach (ButtonType button in userButtons[^1].currentButtons)
         {
             if (button == type)
             {
@@ -60,11 +68,11 @@ public class ButtonInput : MonoBehaviour
     {
         if (pValue.isPressed)
         {
-            buttons.Add(ButtonType.PUNCH);
+            currentButtons.Add(ButtonType.PUNCH);
         }
         else
         {
-            buttons.Remove(ButtonType.PUNCH);
+            currentButtons.Remove(ButtonType.PUNCH);
         }
     }
 
@@ -72,11 +80,11 @@ public class ButtonInput : MonoBehaviour
     {
         if (kValue.isPressed)
         {
-            buttons.Add(ButtonType.KICK);
+            currentButtons.Add(ButtonType.KICK);
         }
         else
         {
-            buttons.Remove(ButtonType.KICK);
+            currentButtons.Remove(ButtonType.KICK);
         }
     }
 
@@ -84,11 +92,11 @@ public class ButtonInput : MonoBehaviour
     {
         if (mValue.isPressed)
         {
-            buttons.Add(ButtonType.MEDIUM);
+            currentButtons.Add(ButtonType.MEDIUM);
         }
         else
         {
-            buttons.Remove(ButtonType.MEDIUM);
+            currentButtons.Remove(ButtonType.MEDIUM);
         }
     }
 
@@ -96,11 +104,11 @@ public class ButtonInput : MonoBehaviour
     {
         if (hValue.isPressed)
         {
-            buttons.Add(ButtonType.HEAVY);
+            currentButtons.Add(ButtonType.HEAVY);
         }
         else
         {
-            buttons.Remove(ButtonType.HEAVY);
+            currentButtons.Remove(ButtonType.HEAVY);
         }
     }
 
@@ -108,11 +116,11 @@ public class ButtonInput : MonoBehaviour
     {
         if (wValue.isPressed)
         {
-            buttons.Add(ButtonType.WIPE);
+            currentButtons.Add(ButtonType.WIPE);
         }
         else
         {
-            buttons.Remove(ButtonType.WIPE);
+            currentButtons.Remove(ButtonType.WIPE);
         }
     }
 
@@ -125,23 +133,23 @@ public class ButtonInput : MonoBehaviour
     // Update is called once per frame
     private void FixedUpdate()
     {
-        if (userButtons.Count == 0 || userButtons[^1].buttons != buttons.ToArray())
+        if (userButtons.Count == 0 || !(userButtons[^1].buttons.Count() == currentButtons.Count && userButtons[^1].buttons.All(currentButtons.Contains)))
         {
-            userButtons.Add(new UserButton(buttons.ToArray(), motionTracker.currentFrame));
+            userButtons.Add(new ButtonRecord(currentButtons.ToArray(), motionTracker.currentFrame));
         }
 
         //print(userButtons.Count);
-        //print(IsButtonActive(ButtonType.MEDIUM));
-        print(userButtons[^1]);
+        print(IsButtonActive(ButtonType.MEDIUM));
+        //print(userButtons[^1]);
     }
 }
 
-public class UserButton
+public class ButtonRecord
 {
     public ButtonType[] buttons { get; }
     public int startFrame { get; }
 
-    public UserButton(ButtonType[] buttons, int startFrame)
+    public ButtonRecord(ButtonType[] buttons, int startFrame)
     {
         this.buttons = buttons;
         this.startFrame = startFrame;
