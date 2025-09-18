@@ -25,9 +25,10 @@ public class ButtonInput : MonoBehaviour
     private List<ButtonType> buttonAddLog = new List<ButtonType>();
     private List<ButtonType> buttonRemoveLog = new List<ButtonType>();
 
+    private List<ButtonType> newButtons = new List<ButtonType>();
     private List<ButtonType> activeButtons = new List<ButtonType>();
-    private List<ButtonType> currentButtons = new List<ButtonType>();
-    
+    private List<ButtonRecord> buttonRecords = new List<ButtonRecord>();
+
 
 
     /*
@@ -43,8 +44,7 @@ public class ButtonInput : MonoBehaviour
 
         return false;
     }
-    */
-
+    
     private bool IsButtonActive(ButtonType type, int tolerance = 0)
     {
         if (userButtons[^1].startFrame < motionTracker.currentFrame - tolerance)
@@ -63,16 +63,17 @@ public class ButtonInput : MonoBehaviour
 
         return false;
     }
+    */
 
     private void OnPunch(InputValue pValue)
     {
         if (pValue.isPressed)
         {
-            currentButtons.Add(ButtonType.PUNCH);
+            buttonAddLog.Add(ButtonType.PUNCH);
         }
         else
         {
-            currentButtons.Remove(ButtonType.PUNCH);
+            buttonRemoveLog.Add(ButtonType.PUNCH);
         }
     }
 
@@ -80,11 +81,11 @@ public class ButtonInput : MonoBehaviour
     {
         if (kValue.isPressed)
         {
-            currentButtons.Add(ButtonType.KICK);
+            buttonAddLog.Add(ButtonType.KICK);
         }
         else
         {
-            currentButtons.Remove(ButtonType.KICK);
+            buttonRemoveLog.Add(ButtonType.KICK);
         }
     }
 
@@ -92,11 +93,11 @@ public class ButtonInput : MonoBehaviour
     {
         if (mValue.isPressed)
         {
-            currentButtons.Add(ButtonType.MEDIUM);
+            buttonAddLog.Add(ButtonType.MEDIUM);
         }
         else
         {
-            currentButtons.Remove(ButtonType.MEDIUM);
+            buttonRemoveLog.Add(ButtonType.MEDIUM);
         }
     }
 
@@ -104,11 +105,11 @@ public class ButtonInput : MonoBehaviour
     {
         if (hValue.isPressed)
         {
-            currentButtons.Add(ButtonType.HEAVY);
+            buttonAddLog.Add(ButtonType.HEAVY);
         }
         else
         {
-            currentButtons.Remove(ButtonType.HEAVY);
+            buttonRemoveLog.Add(ButtonType.HEAVY);
         }
     }
 
@@ -116,11 +117,11 @@ public class ButtonInput : MonoBehaviour
     {
         if (wValue.isPressed)
         {
-            currentButtons.Add(ButtonType.WIPE);
+            buttonAddLog.Add(ButtonType.WIPE);
         }
         else
         {
-            currentButtons.Remove(ButtonType.WIPE);
+            buttonRemoveLog.Add(ButtonType.WIPE);
         }
     }
 
@@ -133,36 +134,53 @@ public class ButtonInput : MonoBehaviour
     // Update is called once per frame
     private void FixedUpdate()
     {
+        /*
         if (userButtons.Count == 0 || !(userButtons[^1].buttons.Count() == currentButtons.Count && userButtons[^1].buttons.All(currentButtons.Contains)))
         {
             userButtons.Add(new ButtonRecord(currentButtons.ToArray(), motionTracker.currentFrame));
         }
+        */
 
-        //print(userButtons.Count);
-        print(IsButtonActive(ButtonType.MEDIUM));
-        //print(userButtons[^1]);
+        newButtons.Clear();
+
+        foreach (ButtonType add in buttonAddLog)
+        {
+            newButtons.Add(add);
+            activeButtons.Add(add);
+            buttonRecords.Add(new ButtonRecord(add, true, motionTracker.currentFrame));
+        }
+
+        buttonAddLog.Clear();
+
+        foreach (ButtonType remove in buttonRemoveLog)
+        {
+            activeButtons.Remove(remove);
+            buttonRecords.Add(new ButtonRecord(remove, false, motionTracker.currentFrame));
+        }
+
+        buttonRemoveLog.Clear();
+
+        // print(userButtons.Count);
+        // print(IsButtonActive(ButtonType.MEDIUM));
+        // print(userButtons[^1]);
     }
 }
 
 public class ButtonRecord
 {
-    public ButtonType[] buttons { get; }
+    public ButtonType button { get; }
+    public bool wasPress { get; }
     public int startFrame { get; }
 
-    public ButtonRecord(ButtonType[] buttons, int startFrame)
+    public ButtonRecord(ButtonType button, bool wasPress, int startFrame)
     {
-        this.buttons = buttons;
+        this.button = button;
+        this.wasPress = wasPress;
         this.startFrame = startFrame;
     }
 
     public override string ToString()
     {
-        string types = "";
-        foreach (ButtonType type in buttons)
-        {
-            types += type + " ";
-        }
-
-        return $"{types}; frame {startFrame}";
+        return $"{button} was {(wasPress ? "pressed" : "released")}; frame {startFrame}";
     }
 }
