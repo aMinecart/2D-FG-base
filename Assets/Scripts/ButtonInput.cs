@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -29,24 +28,29 @@ public class ButtonInput : MonoBehaviour
     private List<ButtonType> activeButtons = new List<ButtonType>();
     private List<ButtonRecord> buttonRecords = new List<ButtonRecord>();
 
-
-
-    /*
+    // returns true if type is currently being held
     private bool IsButtonActive(ButtonType type)
     {
-        foreach (ButtonType button in userButtons[^1].currentButtons)
+        return activeButtons.Contains(type);
+    }
+
+    // returns true when type was pressed less than tolerance frames ago
+    private bool IsButtonRecent(ButtonType type, int tolerance)
+    {
+        int index = 1;
+        while (motionTracker.currentFrame - userButtons[^index].startFrame < tolerance)
         {
-            if (button == type)
+            if (userButtons[^index].button == type && userButtons[^index].wasPress)
             {
                 return true;
             }
+
+            index++;
         }
 
         return false;
-    }
-    
-    private bool IsButtonActive(ButtonType type, int tolerance = 0)
-    {
+
+        /*
         if (userButtons[^1].startFrame < motionTracker.currentFrame - tolerance)
         {
             //print($"{userButtons[^1].startFrame}, {motionTracker.currentFrame}");
@@ -62,8 +66,19 @@ public class ButtonInput : MonoBehaviour
         }
 
         return false;
+        */
     }
-    */
+
+    private void printButtons(List<ButtonType> list)
+    {
+        string buttonTypeNames = "";
+        foreach (ButtonType button in list)
+        {
+            buttonTypeNames += button.ToString() + " ";
+        }
+
+        print(buttonTypeNames);
+    }
 
     private void OnPunch(InputValue pValue)
     {
@@ -159,6 +174,8 @@ public class ButtonInput : MonoBehaviour
         }
 
         buttonRemoveLog.Clear();
+
+        printButtons(activeButtons);
 
         // print(userButtons.Count);
         // print(IsButtonActive(ButtonType.MEDIUM));
