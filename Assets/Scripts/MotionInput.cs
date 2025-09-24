@@ -5,32 +5,41 @@ using UnityEngine.InputSystem;
 
 public enum Direction
 {
-    NORTH,
-    NORTHEAST,
-    EAST,
-    SOUTHEAST,
-    SOUTH,
-    SOUTHWEST,
-    WEST,
-    NORTHWEST,
-    NONE
+    NORTH = 8,
+    NORTHEAST = 9,
+    EAST = 6,
+    SOUTHEAST = 3,
+    SOUTH = 2,
+    SOUTHWEST = 1,
+    WEST = 4,
+    NORTHWEST = 7,
+    NEUTRAL = 5
 }
 
 public enum MotionType
 {
-    NONE,
-    QFOR,
-    QBACK,
-    DPFOR,
-    DPBACK,
-    HFOR,
-    HBACK,
-    DOUBLEQFOR,
-    DOUBLEQBACK
+    NONE = 0,
+    QFOR = 236,
+    QBACK = 214,
+    DPFOR = 623,
+    DPBACK = 421,
+    HFOR = 41236,
+    HBACK = 63214,
+    DOUBLEQFOR = 236236,
+    DOUBLEQBACK = 214214
 }
 
 public class MotionInput : MonoBehaviour
 {
+    // public GameManager gameManager; // should be a script with int values currentFrame and effectiveCurrFrame
+    
+    public static readonly int maxInputLength = 15;
+    public static readonly int maxBufferLength = 10;
+
+    public Vector2 playerInput { get; private set; }
+    public List<DirectionRecord> inputRecord { get; private set; } = new List<DirectionRecord>();
+    public MotionRecord userMotion { get; private set; } = new MotionRecord(MotionType.NONE, 0);
+
     private static readonly TestDirection[] qfor_requirements = new TestDirection[] {
         new TestDirection(Direction.SOUTH, false),
         new TestDirection(Direction.SOUTHEAST, false),
@@ -113,22 +122,11 @@ public class MotionInput : MonoBehaviour
     };
     */
 
-    // public GameManager gameManager; // should be a script with int values currentFrame and effectiveCurrFrame
-    
-    public static readonly int maxInputLength = 15;
-    public static readonly int maxBufferLength = 3;
-
-    [HideInInspector] public int currentFrame = 0;
-
-    private Vector2 playerInput;
-    private List<DirectionRecord> inputRecord = new List<DirectionRecord>();
-    private MotionRecord userMotion = new MotionRecord(MotionType.NONE, 0);
-
-    private Direction CalcDirection(Vector2 input)
+    private static Direction CalcDirection(Vector2 input)
     {
         if (input == Vector2.zero)
         {
-            return Direction.NONE;
+            return Direction.NEUTRAL;
         }
 
         float angle = VectorFunctions.GetVectorAngle(input);
@@ -142,11 +140,11 @@ public class MotionInput : MonoBehaviour
             > 202.5f and <= 247.5f => Direction.SOUTHWEST,
             > 247.5f and <= 292.5f => Direction.SOUTH,
             > 292.5f and <= 337.5f => Direction.SOUTHEAST,
-            _ => Direction.NONE
+            _ => Direction.NEUTRAL
         };
     }
 
-    public bool TestForMotionInput(TestDirection[] requirements, List<DirectionRecord> inputs, int inputIndex, int validSkips)
+    private bool TestForMotionInput(TestDirection[] requirements, List<DirectionRecord> inputs, int inputIndex, int validSkips)
     {
         if (inputIndex > inputs.Count)
         {
@@ -173,7 +171,7 @@ public class MotionInput : MonoBehaviour
 
                 if (skips > validSkips)
                 {
-                    // print($"prints: {currentFrame}");
+                    // print($"prints: {ActionManager.currentFrame}");
                     return false;
                 }
             }
@@ -192,9 +190,9 @@ public class MotionInput : MonoBehaviour
         return true;
     }
 
-    public MotionType ReadMotionFromInputs(List<DirectionRecord> inputs, int startIndex)
+    private MotionType ReadMotionFromInputs(List<DirectionRecord> inputs, int startIndex)
     {
-        if (currentFrame - inputs[^startIndex].startFrame >= maxBufferLength)
+        if (ActionManager.currentFrame - inputs[^startIndex].startFrame >= maxBufferLength)
         {
             return MotionType.NONE;
         }
@@ -237,9 +235,10 @@ public class MotionInput : MonoBehaviour
         }
     }
 
-    public MotionType ScanListForMotion(List<DirectionRecord> directions)
+    private MotionType ScanListForMotion(List<DirectionRecord> directions)
     {
         MotionType motion;
+
         for (int i = 1; i <= maxBufferLength; i++)
         {
             if (directions.Count < i)
@@ -263,12 +262,6 @@ public class MotionInput : MonoBehaviour
         playerInput = moveValue.Get<Vector2>();
     }
 
-    // Start is called before the first frame update
-    private void Start()
-    {
-        
-    }
-
     // Update is called once per frame
     private void FixedUpdate()
     {
@@ -285,36 +278,34 @@ public class MotionInput : MonoBehaviour
         Direction direction = CalcDirection(playerInput);
         if (inputRecord.Count == 0 || inputRecord[^1].direction != direction)
         {
-            inputRecord.Add(new DirectionRecord(direction, currentFrame));
+            inputRecord.Add(new DirectionRecord(direction, ActionManager.currentFrame));
         }
 
         MotionType motion = ScanListForMotion(inputRecord);
         if (motion != userMotion.motion)
         {
-            userMotion = new MotionRecord(motion, currentFrame);
+            userMotion = new MotionRecord(motion, ActionManager.currentFrame);
         }
 
         /*
 
         MotionType motion = ReadMotionFromInputs(inputRecord, 1);
-        if (motion != MotionType.NONE && userMotion.motion != motion)
+        if (motion != MotionType.NEUTRAL && userMotion.motion != motion)
         {
-            userMotion = new MotionRecord(motion, currentFrame);
+            userMotion = new MotionRecord(motion, ActionManager.currentFrame);
         }
-        else if (userMotion.motion != MotionType.NONE && currentFrame - userMotion.startFrame >= maxBufferLength)
+        else if (userMotion.motion != MotionType.NEUTRAL && ActionManager.currentFrame - userMotion.startFrame >= maxBufferLength)
         {
-            userMotion = new MotionRecord(MotionType.NONE, currentFrame);
+            userMotion = new MotionRecord(MotionType.NEUTRAL, ActionManager.currentFrame);
         }
 
         */
 
-        //print(userMotion);
+        // print(inputRecord[^1]);
 
-        //print(direction);
-        //print(currentFrame);
-        //print(ScanListForMotion(inputRecord));
-
-        currentFrame++; // update frame tracker for next frame
+        // print(direction);
+        // print(ActionManager.currentFrame);
+        // print(ScanListForMotion(inputRecord));
     }
 }
 

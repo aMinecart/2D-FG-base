@@ -18,29 +18,30 @@ public enum ButtonType
 
 public class ButtonInput : MonoBehaviour
 {
-    [SerializeField] private MotionInput motionTracker;
-    private List<ButtonRecord> userButtons = new List<ButtonRecord>();
+    // private List<ButtonRecord> userButtons = new List<UserButton>();
 
     private List<ButtonType> buttonAddLog = new List<ButtonType>();
     private List<ButtonType> buttonRemoveLog = new List<ButtonType>();
 
-    private List<ButtonType> newButtons = new List<ButtonType>();
-    private List<ButtonType> activeButtons = new List<ButtonType>();
+    public List<ButtonType> pressedButtons { get; private set; } = new List<ButtonType>();
+    public List<ButtonType> releasedButtons { get; private set; } = new List<ButtonType>();
+    public List<ButtonType> heldButtons { get; private set; } = new List<ButtonType>();
+
     private List<ButtonRecord> buttonRecords = new List<ButtonRecord>();
 
     // returns true if type is currently being held
     private bool IsButtonActive(ButtonType type)
     {
-        return activeButtons.Contains(type);
+        return heldButtons.Contains(type);
     }
 
     // returns true when type was pressed less than tolerance frames ago
     private bool IsButtonRecent(ButtonType type, int tolerance)
     {
         int index = 1;
-        while (motionTracker.currentFrame - userButtons[^index].startFrame < tolerance)
+        while (ActionManager.currentFrame - buttonRecords[^index].startFrame < tolerance)
         {
-            if (userButtons[^index].button == type && userButtons[^index].wasPress)
+            if (buttonRecords[^index].button == type && buttonRecords[^index].wasPress)
             {
                 return true;
             }
@@ -51,13 +52,13 @@ public class ButtonInput : MonoBehaviour
         return false;
 
         /*
-        if (userButtons[^1].startFrame < motionTracker.currentFrame - tolerance)
+        if (buttonRecords[^1].startFrame < ActionManager.currentFrame - tolerance)
         {
-            //print($"{userButtons[^1].startFrame}, {motionTracker.currentFrame}");
+            //print($"{buttonRecords[^1].startFrame}, {ActionManager.currentFrame}");
             return false;
         }
 
-        foreach (ButtonType button in userButtons[^1].buttons)
+        foreach (ButtonType button in buttonRecords[^1].buttons)
         {
             if (button == type)
             {
@@ -143,7 +144,7 @@ public class ButtonInput : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
-        motionTracker = GetComponent<MotionInput>();
+        // ActionManager = GetComponent<MotionInput>();
     }
 
     // Update is called once per frame
@@ -152,34 +153,36 @@ public class ButtonInput : MonoBehaviour
         /*
         if (userButtons.Count == 0 || !(userButtons[^1].buttons.Count() == currentButtons.Count && userButtons[^1].buttons.All(currentButtons.Contains)))
         {
-            userButtons.Add(new ButtonRecord(currentButtons.ToArray(), motionTracker.currentFrame));
+            userButtons.Add(new UserButton(currentButtons.ToArray(), ActionManager.currentFrame));
         }
         */
 
-        newButtons.Clear();
+        pressedButtons.Clear();
+        releasedButtons.Clear();
 
         foreach (ButtonType add in buttonAddLog)
         {
-            newButtons.Add(add);
-            activeButtons.Add(add);
-            buttonRecords.Add(new ButtonRecord(add, true, motionTracker.currentFrame));
+            pressedButtons.Add(add);
+            heldButtons.Add(add);
+            buttonRecords.Add(new ButtonRecord(add, true, ActionManager.currentFrame));
         }
 
         buttonAddLog.Clear();
 
         foreach (ButtonType remove in buttonRemoveLog)
         {
-            activeButtons.Remove(remove);
-            buttonRecords.Add(new ButtonRecord(remove, false, motionTracker.currentFrame));
+            releasedButtons.Add(remove);
+            heldButtons.Remove(remove);
+            buttonRecords.Add(new ButtonRecord(remove, false, ActionManager.currentFrame));
         }
 
         buttonRemoveLog.Clear();
 
-        printButtons(activeButtons);
+        // printButtons(heldButtons);
 
-        // print(userButtons.Count);
+        // print(buttonRecords.Count);
         // print(IsButtonActive(ButtonType.MEDIUM));
-        // print(userButtons[^1]);
+        // print(buttonRecords[^1]);
     }
 }
 
