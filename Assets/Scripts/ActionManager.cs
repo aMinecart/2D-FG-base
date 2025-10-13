@@ -61,8 +61,6 @@ public class ActionManager : MonoBehaviour
         motionInput = GetComponent<MotionInput>();
         buttonInput = GetComponent<ButtonInput>();
 
-        for
-
         /*
         print(GenerateActionCode(Direction.SOUTH, ButtonType.KICK) + " = 2K");
         print(GenerateActionCode(Direction.NEUTRAL, ButtonType.MEDIUM, true) + " j.5M");
