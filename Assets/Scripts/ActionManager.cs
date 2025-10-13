@@ -23,7 +23,12 @@ public class ActionManager : MonoBehaviour
         
         if (shortDistance.HasValue)
         {
-            stringBuilder.Append(shortDistance.Value ? "c." : "f.");
+            stringBuilder.Append(shortDistance.Value ? "c" : "f");
+
+            if (!airborne) // avoid adding multiple dots, do not mark with a dot if one is present
+            {
+                stringBuilder.Append(".");
+            }
         }
         else
         {
@@ -56,6 +61,8 @@ public class ActionManager : MonoBehaviour
         motionInput = GetComponent<MotionInput>();
         buttonInput = GetComponent<ButtonInput>();
 
+        for
+
         /*
         print(GenerateActionCode(Direction.SOUTH, ButtonType.KICK) + " = 2K");
         print(GenerateActionCode(Direction.NEUTRAL, ButtonType.MEDIUM, true) + " j.5M");
@@ -73,7 +80,7 @@ public class ActionManager : MonoBehaviour
         if (buttonInput.pressedButtons.Count > 0)
         {
             // print(GenerateActionCode(motionInput.inputRecord[^1].direction, buttonInput.pressedButtons[^1]));
-            print(GenerateActionCode(motionInput.userMotion.motion, buttonInput.pressedButtons[^1]));
+            // print(GenerateActionCode(motionInput.userMotion.motion, buttonInput.pressedButtons[^1]));
         }
 
         currentFrame++; // update frame tracker for next frame

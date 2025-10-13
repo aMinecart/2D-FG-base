@@ -44,8 +44,8 @@ public readonly struct FrameData
 
     public FrameData(int sta, int act, int rec)
     {
-        startup = sta;
-        active = act;
-        recovery = rec;
+        this.startup = sta;
+        this.active = act;
+        this.recovery = rec;
     }
 }
