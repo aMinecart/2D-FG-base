@@ -9,6 +9,8 @@ public class ActionManager : MonoBehaviour
 
     [HideInInspector] public static int currentFrame = 0;
 
+    [SerializeField] private PlayerManager playerManager;
+
     private MotionInput motionInput;
     private ButtonInput buttonInput;
 
@@ -55,6 +57,18 @@ public class ActionManager : MonoBehaviour
         return stringBuilder.ToString();
     }
 
+    public bool FindAction(string code, List<PlayerAction> actions, out PlayerAction result)
+    {
+        result = actions.Find(action => action.actionCode == code); ;
+
+        if (result != null)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -79,6 +93,21 @@ public class ActionManager : MonoBehaviour
         {
             // print(GenerateActionCode(motionInput.inputRecord[^1].direction, buttonInput.pressedButtons[^1]));
             // print(GenerateActionCode(motionInput.userMotion.motion, buttonInput.pressedButtons[^1]));
+            
+            List<PlayerAction> list = new List<PlayerAction>();
+
+            string motCode = GenerateActionCode(motionInput.userMotion.motion, buttonInput.pressedButtons[^1]);
+            string dirCode = GenerateActionCode(motionInput.inputRecord[^1].direction, buttonInput.pressedButtons[^1]);
+
+            if (FindAction(motCode, list, out PlayerAction mResult))
+            {
+                Instantiate(mResult.hitbox);
+            }
+            else if (FindAction(dirCode, list, out PlayerAction dResult))
+            {
+
+                Instantiate(dResult.hitbox);
+            }
         }
 
         currentFrame++; // update frame tracker for next frame

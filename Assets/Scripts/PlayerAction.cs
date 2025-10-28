@@ -11,7 +11,7 @@ public enum PermittedPos
 }
 */
 
-public class PlayerAction : MonoBehaviour
+public class PlayerAction : ScriptableObject
 {
     public string actionCode { get; private set; }
     public FrameData frameData { get; private set; }
