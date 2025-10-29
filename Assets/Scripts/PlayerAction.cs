@@ -11,17 +11,17 @@ public enum PermittedPos
 }
 */
 
-public class PlayerAction : ScriptableObject
+public class PlayerAction
 {
     public string actionCode { get; private set; }
     public FrameData frameData { get; private set; }
-    public GameObject hitbox { get; private set; }
+    public BoxInfo[] hitboxes { get; private set; }
 
-    public PlayerAction(string actionCode, FrameData frameData, GameObject hitbox)
+    public PlayerAction(string actionCode, FrameData frameData, BoxInfo[] hitboxes)
     {
         this.actionCode = actionCode;
         this.frameData = frameData;
-        this.hitbox = hitbox;
+        this.hitboxes = hitboxes;
     }
 
     // position
@@ -47,5 +47,22 @@ public readonly struct FrameData
         this.startup = sta;
         this.active = act;
         this.recovery = rec;
+    }
+}
+
+public readonly struct BoxInfo
+{
+    public readonly int push;
+    public readonly int raise;
+
+    public readonly int length;
+    public readonly int width;
+
+    public BoxInfo(int push, int raise, int length, int width)
+    {
+        this.push = push;
+        this.raise = raise;
+        this.length = length;
+        this.width = width;
     }
 }

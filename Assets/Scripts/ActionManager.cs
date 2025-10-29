@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using Newtonsoft.Json;
 using UnityEngine;
 
 public class ActionManager : MonoBehaviour
@@ -13,6 +14,8 @@ public class ActionManager : MonoBehaviour
 
     private MotionInput motionInput;
     private ButtonInput buttonInput;
+
+    private Dictionary<string, PlayerAction> actionsByCode = new Dictionary<string, PlayerAction>();
 
     public static string GenerateActionCode(Direction direction, ButtonType button, bool airborne = false, bool? shortDistance = null)
     {
@@ -75,6 +78,11 @@ public class ActionManager : MonoBehaviour
         motionInput = GetComponent<MotionInput>();
         buttonInput = GetComponent<ButtonInput>();
 
+        PlayerAction pA = new PlayerAction("j.H", new FrameData(1, 10, 100), new BoxInfo[] {new BoxInfo(2, 3, 4, 6)});
+        print(JsonConvert.SerializeObject(pA));
+
+        //actionsByCode.Add()
+
         /*
         print(GenerateActionCode(Direction.SOUTH, ButtonType.KICK) + " = 2K");
         print(GenerateActionCode(Direction.NEUTRAL, ButtonType.MEDIUM, true) + " j.5M");
@@ -99,14 +107,14 @@ public class ActionManager : MonoBehaviour
             string motCode = GenerateActionCode(motionInput.userMotion.motion, buttonInput.pressedButtons[^1]);
             string dirCode = GenerateActionCode(motionInput.inputRecord[^1].direction, buttonInput.pressedButtons[^1]);
 
-            if (FindAction(motCode, list, out PlayerAction mResult))
+            if (actionsByCode.TryGetValue(motCode, out PlayerAction mResult))
             {
-                Instantiate(mResult.hitbox);
+                print(mResult.actionCode);
             }
-            else if (FindAction(dirCode, list, out PlayerAction dResult))
-            {
 
-                Instantiate(dResult.hitbox);
+            if (actionsByCode.TryGetValue(dirCode, out PlayerAction dResult))
+            {
+                print(dResult.actionCode);
             }
         }
 
