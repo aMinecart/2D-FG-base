@@ -4,18 +4,18 @@ using System.Text;
 using Newtonsoft.Json;
 using UnityEngine;
 
+[RequireComponent(typeof(MotionInput))]
+[RequireComponent(typeof(ButtonInput))]
 public class ActionManager : MonoBehaviour
 {
     private static StringBuilder stringBuilder = new StringBuilder();
 
-    [HideInInspector] public static int currentFrame = 0;
+    private GameManager gameManager;
 
-    [SerializeField] private PlayerManager playerManager;
+    private PlayerManager playerManager;
 
     private MotionInput motionInput;
     private ButtonInput buttonInput;
-
-    private Dictionary<string, PlayerAction> actionsByCode = new Dictionary<string, PlayerAction>();
 
     public static string GenerateActionCode(Direction direction, ButtonType button, bool airborne = false, bool? shortDistance = null)
     {
@@ -51,11 +51,11 @@ public class ActionManager : MonoBehaviour
 
         if (airborne)
         {
-            stringBuilder.Append("j.");
+            stringBuilder.Append("j."); // append jumping ID
         }
         
-        stringBuilder.Append((int)motion);
-        stringBuilder.Append(button.ToString()[0]);
+        stringBuilder.Append((int)motion); // append motion code (i.e. 214 for quarter circle back)
+        stringBuilder.Append(button.ToString()[0]); // append first letter of action (i.e. K for KICK)
 
         return stringBuilder.ToString();
     }
@@ -75,13 +75,12 @@ public class ActionManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        gameManager = FindAnyObjectByType<GameManager>();
+        
+        playerManager = GetComponent<PlayerManager>();
+
         motionInput = GetComponent<MotionInput>();
         buttonInput = GetComponent<ButtonInput>();
-
-        PlayerAction pA = new PlayerAction("j.H", new FrameData(1, 10, 100), new BoxInfo[] {new BoxInfo(2, 3, 4, 6)});
-        print(JsonConvert.SerializeObject(pA));
-
-        //actionsByCode.Add()
 
         /*
         print(GenerateActionCode(Direction.SOUTH, ButtonType.KICK) + " = 2K");
@@ -102,22 +101,20 @@ public class ActionManager : MonoBehaviour
             // print(GenerateActionCode(motionInput.inputRecord[^1].direction, buttonInput.pressedButtons[^1]));
             // print(GenerateActionCode(motionInput.userMotion.motion, buttonInput.pressedButtons[^1]));
             
-            List<PlayerAction> list = new List<PlayerAction>();
+            
 
             string motCode = GenerateActionCode(motionInput.userMotion.motion, buttonInput.pressedButtons[^1]);
             string dirCode = GenerateActionCode(motionInput.inputRecord[^1].direction, buttonInput.pressedButtons[^1]);
 
-            if (actionsByCode.TryGetValue(motCode, out PlayerAction mResult))
+            if (playerManager.actionsByCode.TryGetValue(motCode, out PlayerAction mResult))
             {
                 print(mResult.actionCode);
             }
 
-            if (actionsByCode.TryGetValue(dirCode, out PlayerAction dResult))
+            if (playerManager.actionsByCode.TryGetValue(dirCode, out PlayerAction dResult))
             {
                 print(dResult.actionCode);
             }
         }
-
-        currentFrame++; // update frame tracker for next frame
     }
 }

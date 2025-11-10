@@ -31,7 +31,7 @@ public enum MotionType
 
 public class MotionInput : MonoBehaviour
 {
-    // public GameManager gameManager; // should be a script with int values currentFrame and effectiveCurrFrame
+    public GameManager gameManager; // should be a script with int values currentFrame and effectiveCurrFrame
     
     public static readonly int maxInputLength = 15;
     public static readonly int maxBufferLength = 10;
@@ -171,7 +171,7 @@ public class MotionInput : MonoBehaviour
 
                 if (skips > validSkips)
                 {
-                    // print($"prints: {ActionManager.currentFrame}");
+                    // print($"prints: {gameManager.currentFrame}");
                     return false;
                 }
             }
@@ -192,7 +192,7 @@ public class MotionInput : MonoBehaviour
 
     private MotionType ReadMotionFromInputs(List<DirectionRecord> inputs, int startIndex)
     {
-        if (ActionManager.currentFrame - inputs[^startIndex].startFrame >= maxBufferLength)
+        if (gameManager.currentFrame - inputs[^startIndex].startFrame >= maxBufferLength)
         {
             return MotionType.NONE;
         }
@@ -262,6 +262,11 @@ public class MotionInput : MonoBehaviour
         playerInput = moveValue.Get<Vector2>();
     }
 
+    private void Start()
+    {
+        gameManager = FindAnyObjectByType<GameManager>();
+    }
+
     // Update is called once per frame
     private void FixedUpdate()
     {
@@ -278,13 +283,13 @@ public class MotionInput : MonoBehaviour
         Direction direction = CalcDirection(playerInput);
         if (inputRecord.Count == 0 || inputRecord[^1].direction != direction)
         {
-            inputRecord.Add(new DirectionRecord(direction, ActionManager.currentFrame));
+            inputRecord.Add(new DirectionRecord(direction, gameManager.currentFrame));
         }
 
         MotionType motion = ScanListForMotion(inputRecord);
         if (motion != userMotion.motion)
         {
-            userMotion = new MotionRecord(motion, ActionManager.currentFrame);
+            userMotion = new MotionRecord(motion, gameManager.currentFrame);
         }
 
         /*
@@ -292,11 +297,11 @@ public class MotionInput : MonoBehaviour
         MotionType motion = ReadMotionFromInputs(inputRecord, 1);
         if (motion != MotionType.NEUTRAL && userMotion.motion != motion)
         {
-            userMotion = new MotionRecord(motion, ActionManager.currentFrame);
+            userMotion = new MotionRecord(motion, gameManager.currentFrame);
         }
-        else if (userMotion.motion != MotionType.NEUTRAL && ActionManager.currentFrame - userMotion.startFrame >= maxBufferLength)
+        else if (userMotion.motion != MotionType.NEUTRAL && gameManager.currentFrame - userMotion.startFrame >= maxBufferLength)
         {
-            userMotion = new MotionRecord(MotionType.NEUTRAL, ActionManager.currentFrame);
+            userMotion = new MotionRecord(MotionType.NEUTRAL, gameManager.currentFrame);
         }
 
         */
@@ -304,7 +309,7 @@ public class MotionInput : MonoBehaviour
         // print(inputRecord[^1]);
 
         // print(direction);
-        // print(ActionManager.currentFrame);
+        // print(gameManager.currentFrame);
         // print(ScanListForMotion(inputRecord));
     }
 }

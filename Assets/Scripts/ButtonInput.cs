@@ -18,6 +18,8 @@ public enum ButtonType
 
 public class ButtonInput : MonoBehaviour
 {
+    private GameManager gameManager;
+
     // private List<ButtonRecord> userButtons = new List<UserButton>();
 
     private List<ButtonType> buttonAddLog = new List<ButtonType>();
@@ -39,7 +41,7 @@ public class ButtonInput : MonoBehaviour
     private bool IsButtonRecent(ButtonType type, int tolerance)
     {
         int index = 1;
-        while (ActionManager.currentFrame - buttonRecords[^index].startFrame < tolerance)
+        while (gameManager.currentFrame - buttonRecords[^index].startFrame < tolerance)
         {
             if (buttonRecords[^index].button == type && buttonRecords[^index].wasPress)
             {
@@ -52,9 +54,9 @@ public class ButtonInput : MonoBehaviour
         return false;
 
         /*
-        if (buttonRecords[^1].startFrame < ActionManager.currentFrame - tolerance)
+        if (buttonRecords[^1].startFrame < gameManager.currentFrame - tolerance)
         {
-            //print($"{buttonRecords[^1].startFrame}, {ActionManager.currentFrame}");
+            //print($"{buttonRecords[^1].startFrame}, {gameManager.currentFrame}");
             return false;
         }
 
@@ -145,6 +147,7 @@ public class ButtonInput : MonoBehaviour
     private void Start()
     {
         // ActionManager = GetComponent<MotionInput>();
+        gameManager = FindAnyObjectByType<GameManager>();
     }
 
     // Update is called once per frame
@@ -153,7 +156,7 @@ public class ButtonInput : MonoBehaviour
         /*
         if (userButtons.Count == 0 || !(userButtons[^1].buttons.Count() == currentButtons.Count && userButtons[^1].buttons.All(currentButtons.Contains)))
         {
-            userButtons.Add(new UserButton(currentButtons.ToArray(), ActionManager.currentFrame));
+            userButtons.Add(new UserButton(currentButtons.ToArray(), gameManager.currentFrame));
         }
         */
 
@@ -164,7 +167,7 @@ public class ButtonInput : MonoBehaviour
         {
             pressedButtons.Add(add);
             heldButtons.Add(add);
-            buttonRecords.Add(new ButtonRecord(add, true, ActionManager.currentFrame));
+            buttonRecords.Add(new ButtonRecord(add, true, gameManager.currentFrame));
         }
 
         buttonAddLog.Clear();
@@ -173,7 +176,7 @@ public class ButtonInput : MonoBehaviour
         {
             releasedButtons.Add(remove);
             heldButtons.Remove(remove);
-            buttonRecords.Add(new ButtonRecord(remove, false, ActionManager.currentFrame));
+            buttonRecords.Add(new ButtonRecord(remove, false, gameManager.currentFrame));
         }
 
         buttonRemoveLog.Clear();
