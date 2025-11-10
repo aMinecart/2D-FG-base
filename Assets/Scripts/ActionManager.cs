@@ -62,14 +62,9 @@ public class ActionManager : MonoBehaviour
 
     public bool FindAction(string code, List<PlayerAction> actions, out PlayerAction result)
     {
-        result = actions.Find(action => action.actionCode == code); ;
-
-        if (result != null)
-        {
-            return true;
-        }
-
-        return false;
+        result = actions.Find(action => action.actionCode == code);
+        
+        return result != null;
     }
 
     // Start is called before the first frame update
@@ -98,22 +93,22 @@ public class ActionManager : MonoBehaviour
     {
         if (buttonInput.pressedButtons.Count > 0)
         {
-            // print(GenerateActionCode(motionInput.inputRecord[^1].direction, buttonInput.pressedButtons[^1]));
-            // print(GenerateActionCode(motionInput.userMotion.motion, buttonInput.pressedButtons[^1]));
+            print(GenerateActionCode(motionInput.inputRecord[^1].direction, buttonInput.pressedButtons[^1]));
+            print(GenerateActionCode(motionInput.userMotion.motion, buttonInput.pressedButtons[^1]));
             
             
 
             string motCode = GenerateActionCode(motionInput.userMotion.motion, buttonInput.pressedButtons[^1]);
             string dirCode = GenerateActionCode(motionInput.inputRecord[^1].direction, buttonInput.pressedButtons[^1]);
 
-            if (playerManager.actionsByCode.TryGetValue(motCode, out PlayerAction mResult))
+            // if (playerManager.actionsByCode.TryGetValue(motCode, out PlayerAction mResult))
             {
-                print(mResult.actionCode);
+                //print(mResult.actionCode);
             }
 
-            if (playerManager.actionsByCode.TryGetValue(dirCode, out PlayerAction dResult))
+            // if (playerManager.actionsByCode.TryGetValue(dirCode, out PlayerAction dResult))
             {
-                print(dResult.actionCode);
+                //print(dResult.actionCode);
             }
         }
     }

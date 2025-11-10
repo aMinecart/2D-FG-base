@@ -34,6 +34,11 @@ public class PlayerAction
     // public SimpleDirection simpleDir;  (for normal)
     // public Direction dir;  (for command normal)
     // public MotionType motionType; (special)
+
+    public override string ToString()
+    {
+        return $"Action with code {actionCode}, {frameData.startup} frame startup, {frameData.active} frames active, and {frameData.recovery} frame recovery";
+    }
 }
 
 public readonly struct FrameData
