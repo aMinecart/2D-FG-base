@@ -47,11 +47,16 @@ public readonly struct FrameData
     public readonly int active;
     public readonly int recovery;
 
-    public FrameData(int sta, int act, int rec)
+    public FrameData(int startup, int active, int recovery)
     {
-        this.startup = sta;
-        this.active = act;
-        this.recovery = rec;
+        this.startup = startup;
+        this.active = active;
+        this.recovery = recovery;
+    }
+
+    public override string ToString()
+    {
+        return $"Sta: {startup}, Act: {active}, Rec: {recovery}";
     }
 }
 
@@ -69,5 +74,10 @@ public readonly struct BoxInfo
         this.raise = raise;
         this.length = length;
         this.width = width;
+    }
+
+    public override string ToString()
+    {
+        return $"X Offset: {push}, Y Offset: {raise}, Length: {length}, Width: {width}";
     }
 }
