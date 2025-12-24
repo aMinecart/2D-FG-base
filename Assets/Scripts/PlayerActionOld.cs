@@ -11,13 +11,13 @@ public enum PermittedPos
 }
 */
 
-public class PlayerAction
+public class PlayerActionOld
 {
     public string actionCode { get; private set; }
     public FrameData frameData { get; private set; }
     public BoxInfo[] hitboxes { get; private set; }
 
-    public PlayerAction(string actionCode, FrameData frameData, BoxInfo[] hitboxes)
+    public PlayerActionOld(string actionCode, FrameData frameData, BoxInfo[] hitboxes)
     {
         this.actionCode = actionCode;
         this.frameData = frameData;

@@ -1,10 +1,25 @@
-using System.Collections;
+using System.IO;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
     public int currentFrame { get; private set; } = 0;
+
+    public static List<T> GetJSONAsList<T>(string filePath)
+    {
+        if (File.Exists(filePath))
+        {
+            string listAsText = File.ReadAllText(filePath);
+            print(listAsText);
+
+            return JsonConvert.DeserializeObject<List<T>>(listAsText); ;
+        }
+
+        Debug.LogWarning($"Could not find file at {filePath}");
+        return null;
+    }
 
     [RuntimeInitializeOnLoadMethod]
     private static void Initialization()

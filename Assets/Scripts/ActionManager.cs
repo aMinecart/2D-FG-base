@@ -17,6 +17,9 @@ public class ActionManager : MonoBehaviour
     private MotionInput motionInput;
     private ButtonInput buttonInput;
 
+    private Dictionary<string, PlayerActionOld> normalList = new Dictionary<string, PlayerActionOld>();
+    private Dictionary<string, PlayerActionOld> specialList = new Dictionary<string, PlayerActionOld>();
+
     private int? actionStartFrame = null;
     private FrameData actionFrameData;
     private CustomCollider2D actionHitbox;
@@ -64,7 +67,7 @@ public class ActionManager : MonoBehaviour
         return stringBuilder.ToString();
     }
     
-    private bool FindAction(string code, List<PlayerAction> actions, out PlayerAction result)
+    private bool FindAction(string code, List<PlayerActionOld> actions, out PlayerActionOld result)
     {
         result = actions.Find(action => action.actionCode == code);
         
@@ -115,6 +118,12 @@ public class ActionManager : MonoBehaviour
         }
     }
 
+    public void InterruptAction()
+    {
+        actionStartFrame = null;
+        actionHitbox.enabled = false;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -149,7 +158,7 @@ public class ActionManager : MonoBehaviour
             string specialCode = GenerateActionCode(motionInput.userMotion.motion, buttonInput.pressedButtons[^1]);
             string normalCode = GenerateActionCode(motionInput.inputRecord[^1].direction, buttonInput.pressedButtons[^1]);
 
-            if (playerManager.actionsByCode.TryGetValue(specialCode, out PlayerAction specialAction))
+            if (playerManager.actionsByCode.TryGetValue(specialCode, out PlayerActionOld specialAction))
             {
                 print(specialAction.actionCode);
                 FormHitbox(specialAction.hitboxes);
@@ -157,7 +166,7 @@ public class ActionManager : MonoBehaviour
                 actionStartFrame = gameManager.currentFrame;
                 actionFrameData = specialAction.frameData;
             }
-            else if (playerManager.actionsByCode.TryGetValue(normalCode, out PlayerAction normalAction))
+            else if (playerManager.actionsByCode.TryGetValue(normalCode, out PlayerActionOld normalAction))
             {
                 print(normalAction.actionCode);
                 FormHitbox(normalAction.hitboxes);
