@@ -59,25 +59,3 @@ public readonly struct FrameData
         return $"Sta: {startup}, Act: {active}, Rec: {recovery}";
     }
 }
-
-public readonly struct BoxInfo
-{
-    public readonly int push;
-    public readonly int raise;
-
-    public readonly int length;
-    public readonly int width;
-
-    public BoxInfo(int push, int raise, int length, int width)
-    {
-        this.push = push;
-        this.raise = raise;
-        this.length = length;
-        this.width = width;
-    }
-
-    public override string ToString()
-    {
-        return $"X Offset: {push}, Y Offset: {raise}, Length: {length}, Width: {width}";
-    }
-}

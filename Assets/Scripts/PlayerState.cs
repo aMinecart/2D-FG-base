@@ -41,34 +41,102 @@ public class PlayerAction
         this.code = code;
         this.states = states;
     }
+
+    public bool IsValid()
+    {
+        foreach (PlayerState state in states)
+        {
+            if (!state.IsValid())
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public override string ToString()
+    {
+        /*
+        string asString = $"Player action {code}";
+
+        foreach (PlayerState state in states)
+        {
+            asString += state.ToString() + "; ";
+        }
+        */
+
+        return $"Player action {code}";
+    }
 }
 
 public class PlayerState
 {
     public ActionState type { get; }
-    public PlayerStage[] stages { get; }
+    public int duration { get; }
 
-    public int duration
-    {
-        get
-        {
-            int sum = 0;
-            foreach (PlayerStage stage in stages)
-            {
-                sum += stage.duration;
-            }
+    public TimedArea[] hurtboxes { get; }
+    public TimedArea[] hitboxes { get; }
+    public TimedEffect[] effects { get; }
+    public AttackInfo attackInfo { get; }
 
-            return sum;
-        }
-    }
-
-    public PlayerState(ActionState type, PlayerStage[] stages)
+    public PlayerState(ActionState type,
+                       int duration,
+                       TimedArea[] hurtboxes,
+                       TimedArea[] hitboxes,
+                       TimedEffect[] effects,
+                       AttackInfo attackInfo)
     {
         this.type = type;
-        this.stages = stages;
+        this.duration = duration;
+        this.hurtboxes = hurtboxes;
+        this.hitboxes = hitboxes;
+        this.effects = effects;
+        this.attackInfo = attackInfo;
+    }
+
+    public bool IsValid()
+    {
+        if (hurtboxes != null)
+        {
+            int hurtboxLength = 0;
+
+            foreach (TimedArea area in hurtboxes)
+            {
+                hurtboxLength += area.duration;
+            }
+
+            if (hurtboxLength != duration)
+            {
+                return false;
+            }
+        }
+
+        if (hitboxes != null)
+        {
+            int hitboxLength = 0;
+
+            foreach (TimedArea area in hitboxes)
+            {
+                hitboxLength += area.duration;
+            }
+
+            if (hitboxLength != duration)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    
+    public override string ToString()
+    {
+        return $"{type} state lasting {duration} frames";
     }
 }
 
+/*
 public class PlayerStage
 {
     public int duration { get; }
@@ -85,7 +153,7 @@ public class PlayerStage
         this.effects = effects;
         this.attackInfo = attackInfo;
     }
-}
+}*/
 
 public struct TimedEffect
 {
@@ -101,6 +169,23 @@ public struct TimedEffect
     public override string ToString()
     {
         return $"{effect} effect with duration {duration}";
+    }
+}
+
+public struct TimedArea
+{
+    public BoxInfo[] subboxes;
+    public int duration;
+
+    public TimedArea(BoxInfo[] subboxes, int duration)
+    {
+        this.subboxes = subboxes;
+        this.duration = duration;
+    }
+
+    public override string ToString()
+    {
+        return $"'Composite' area with duration {duration}";
     }
 }
 

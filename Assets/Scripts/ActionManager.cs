@@ -80,7 +80,7 @@ public class ActionManager : MonoBehaviour
 
         foreach (BoxInfo box in bases)
         {
-            shapes.AddBox(new Vector2(box.push, box.raise), new Vector2(box.length, box.length));
+            shapes.AddBox(new Vector2(box.push, box.raise), new Vector2(box.length, box.width));
         }
         
         actionHitbox.SetCustomShapes(shapes);
