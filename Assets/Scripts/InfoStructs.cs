@@ -42,7 +42,7 @@ public readonly struct Hitbox
 
     // array of effect types and their duration on hit
 
-    // other properties to be applied on hit
+    // other properties to be applied on hit (e.g. RISC)
 
     public Hitbox(BoxInfo[] subBoxes, int baseDamage, Vector2 baseKnockback)
     {

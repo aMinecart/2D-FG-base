@@ -9,7 +9,7 @@ using UnityEngine;
 [RequireComponent(typeof(ButtonInput))]
 public class ActionManager : MonoBehaviour
 {
-    private static StringBuilder stringBuilder = new StringBuilder();
+    private static readonly StringBuilder stringBuilder = new();
 
     private GameManager gameManager;
     private PlayerManager playerManager;
@@ -17,12 +17,14 @@ public class ActionManager : MonoBehaviour
     private MotionInput motionInput;
     private ButtonInput buttonInput;
 
-    private Dictionary<string, PlayerActionOld> normalList = new Dictionary<string, PlayerActionOld>();
-    private Dictionary<string, PlayerActionOld> specialList = new Dictionary<string, PlayerActionOld>();
+    private Dictionary<string, PlayerActionOld> normalList = new();
+    private Dictionary<string, PlayerActionOld> specialList = new();
 
     private int? actionStartFrame = null;
     private FrameData actionFrameData;
-    private CustomCollider2D actionHitbox;
+    private CustomCollider2D hitboxCollider;
+
+    private PlayerActionOld currAction = null;
 
     public static string GenerateActionCode(Direction direction, ButtonType button, bool airborne = false, bool? shortDistance = null)
     {
@@ -67,61 +69,70 @@ public class ActionManager : MonoBehaviour
         return stringBuilder.ToString();
     }
     
+    /*
     private bool FindAction(string code, List<PlayerActionOld> actions, out PlayerActionOld result)
     {
         result = actions.Find(action => action.actionCode == code);
         
         return result != null;
     }
+    */
 
-    private void FormHitbox(BoxInfo[] bases)
+    private void FormHitbox(Hitbox info)
     {
-        PhysicsShapeGroup2D shapes = new PhysicsShapeGroup2D();
+        PhysicsShapeGroup2D shapes = new();
 
-        foreach (BoxInfo box in bases)
+        foreach (BoxInfo box in info.subBoxes)
         {
             shapes.AddBox(new Vector2(box.push, box.raise), new Vector2(box.length, box.width));
         }
         
-        actionHitbox.SetCustomShapes(shapes);
+        hitboxCollider.SetCustomShapes(shapes);
     }
 
     private void ManageActionStatus()
     {
-        if (!actionStartFrame.HasValue)
+        if (currAction is null)
         {
             return;
         }
 
-        int timeSince = gameManager.currentFrame - actionStartFrame.Value;
 
-        if (timeSince == 0)
-        {
-            playerManager.actionable = false;
-            actionHitbox.enabled = false;
-        }
 
-        if (timeSince == actionFrameData.startup)
-        {
-            actionHitbox.enabled = true;
-        }
+        //if (!actionStartFrame.HasValue)
+        //{
+        //    return;
+        //}
 
-        if (timeSince == actionFrameData.startup + actionFrameData.active)
-        {
-            actionHitbox.enabled = false;
-        }
+        //int timeSince = gameManager.currentFrame - actionStartFrame.Value;
 
-        if (timeSince == actionFrameData.startup + actionFrameData.active + actionFrameData.recovery)
-        {
-            actionStartFrame = null;
-            playerManager.actionable = true;
-        }
+        //if (timeSince == 0)
+        //{
+        //    playerManager.actionable = false;
+        //    hitboxCollider.enabled = false;
+        //}
+
+        //if (timeSince == actionFrameData.startup)
+        //{
+        //    hitboxCollider.enabled = true;
+        //}
+
+        //if (timeSince == actionFrameData.startup + actionFrameData.active)
+        //{
+        //    hitboxCollider.enabled = false;
+        //}
+
+        //if (timeSince == actionFrameData.startup + actionFrameData.active + actionFrameData.recovery)
+        //{
+        //    actionStartFrame = null;
+        //    playerManager.actionable = true;
+        //}
     }
 
     public void InterruptAction()
     {
         actionStartFrame = null;
-        actionHitbox.enabled = false;
+        hitboxCollider.enabled = false;
     }
 
     // Start is called before the first frame update
@@ -133,7 +144,7 @@ public class ActionManager : MonoBehaviour
         motionInput = GetComponent<MotionInput>();
         buttonInput = GetComponent<ButtonInput>();
 
-        actionHitbox = GetComponent<CustomCollider2D>();
+        hitboxCollider = GetComponent<CustomCollider2D>();
 
         /*
         print(GenerateActionCode(Direction.SOUTH, ButtonType.KICK) + " = 2K");
@@ -160,19 +171,21 @@ public class ActionManager : MonoBehaviour
 
             if (playerManager.actionsByCode.TryGetValue(specialCode, out PlayerActionOld specialAction))
             {
+                currAction = specialAction;
                 print(specialAction.actionCode);
-                FormHitbox(specialAction.hitboxes);
+                //FormHitbox(specialAction.hitboxes);
 
-                actionStartFrame = gameManager.currentFrame;
-                actionFrameData = specialAction.frameData;
+                //actionStartFrame = gameManager.currentFrame;
+                //actionFrameData = specialAction.frameData;
             }
             else if (playerManager.actionsByCode.TryGetValue(normalCode, out PlayerActionOld normalAction))
             {
+                currAction = normalAction;
                 print(normalAction.actionCode);
-                FormHitbox(normalAction.hitboxes);
+                //FormHitbox(normalAction.hitboxes);
 
-                actionStartFrame = gameManager.currentFrame;
-                actionFrameData = normalAction.frameData;
+                //actionStartFrame = gameManager.currentFrame;
+                //actionFrameData = normalAction.frameData;
             }
         }
 

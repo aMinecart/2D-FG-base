@@ -2,11 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 public class TimedSequence<T>
 {
-    public KeyValuePair<int, T>[] sequence { get; }
+    public IEnumerable<KeyValuePair<int, T>> sequence { get; }
 
     public int[] timings
     {
@@ -29,13 +28,9 @@ public class TimedSequence<T>
         this.sequence = sequence.OrderBy(kvp => kvp.Key).ToArray();
     }
 
-    public IEnumerable<T> GetCompleteSequence(int sequenceLength)
+    public IEnumerator<KeyValuePair<int, T>> GetSequenceIterator()
     {
-        int currIndex = 0;
-        for (int timing = 0; timing <= sequenceLength; timing++)
-        {
-            yield return (sequence[currIndex].Key == timing) ? sequence[currIndex++].Value : default;
-        }
+        return sequence.GetEnumerator();
     }
 
     /* private Dictionary<int, T> sequence { get; }
@@ -67,6 +62,7 @@ public class TimedSequence<T>
     */
 }
 
+/*
 public class TimedIterator<T>
 {
     private KeyValuePair<int, T>[] sequence;
@@ -74,7 +70,7 @@ public class TimedIterator<T>
 
     public TimedIterator(TimedSequence<T> timedSequence)
     {
-        this.sequence = timedSequence.sequence;
+        this.sequence = timedSequence.sequence.ToArray();
     }
 
     public T CheckTiming(int timing)
@@ -87,3 +83,4 @@ public class TimedIterator<T>
         return sequence[currIndex++].Value;
     }
 }
+*/

@@ -15,13 +15,21 @@ public class PlayerActionOld
 {
     public string actionCode { get; private set; }
     public FrameData frameData { get; private set; }
-    public BoxInfo[] hitboxes { get; private set; }
+    public TimedSequence<Hitbox> hitboxSequence { get; private set; }
+    public TimedSequence<Hurtbox> hurtboxSequence { get; private set; }
+    public TimedSequence<MoveInfo> movementSequence { get; private set; }
 
-    public PlayerActionOld(string actionCode, FrameData frameData, BoxInfo[] hitboxes)
+    public PlayerActionOld(string actionCode,
+                           FrameData frameData,
+                           TimedSequence<Hitbox> hitboxSequence,
+                           TimedSequence<Hurtbox> hurtboxSequence,
+                           TimedSequence<MoveInfo> movementSequence)
     {
         this.actionCode = actionCode;
         this.frameData = frameData;
-        this.hitboxes = hitboxes;
+        this.hitboxSequence = hitboxSequence;
+        this.hurtboxSequence = hurtboxSequence;
+        this.movementSequence = movementSequence;
     }
 
     // position
