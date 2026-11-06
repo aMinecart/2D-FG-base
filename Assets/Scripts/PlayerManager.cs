@@ -28,8 +28,8 @@ public class PlayerManager : MonoBehaviour
     private void GenerateTestJSON()
     {
         List<(string, PlayerActionOld)> actions = new List<(string, PlayerActionOld)>() {
-            ("5H", new PlayerActionOld("5H", new FrameData(1, 10, 100), new BoxInfo[] { new BoxInfo(2, 3, 4, 6) })),
-            ("6M", new PlayerActionOld("6M", new FrameData(15, 50, 30), new BoxInfo[] { new BoxInfo(1, 0, 1, 1) }))
+            //("5H", new PlayerActionOld("5H", new FrameData(1, 10, 100), new BoxInfo[] { new BoxInfo(2, 3, 4, 6) })),
+            //("6M", new PlayerActionOld("6M", new FrameData(15, 50, 30), new BoxInfo[] { new BoxInfo(1, 0, 1, 1) }))
             };
 
         string filepath = Path.Combine(Application.persistentDataPath + "TestCharacter_NEW.json");

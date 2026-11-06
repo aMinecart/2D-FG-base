@@ -190,6 +190,6 @@ public class ActionManager : MonoBehaviour
         }
 
         ManageActionStatus();
-        print(playerManager.actionable);
+        //print(playerManager.actionable);
     }
 }

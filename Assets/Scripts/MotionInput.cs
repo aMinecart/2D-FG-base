@@ -40,88 +40,6 @@ public class MotionInput : MonoBehaviour
     public List<DirectionRecord> inputRecord { get; private set; } = new List<DirectionRecord>();
     public MotionRecord userMotion { get; private set; } = new MotionRecord(MotionType.NONE, 0);
 
-    private static readonly TestDirection[] qfor_requirements = new TestDirection[] {
-        new TestDirection(Direction.SOUTH, false),
-        new TestDirection(Direction.SOUTHEAST, false),
-        new TestDirection(Direction.EAST, false)
-    };
-
-    private static readonly TestDirection[] qback_requirements = new TestDirection[] {
-        new TestDirection(Direction.SOUTH, false),
-        new TestDirection(Direction.SOUTHWEST, false),
-        new TestDirection(Direction.WEST, false)
-    };
-
-    private static readonly TestDirection[] dpfor_requirements = new TestDirection[] {
-        new TestDirection(Direction.EAST, false),
-        new TestDirection(Direction.SOUTHEAST, true),
-        new TestDirection(Direction.SOUTH, false),
-        new TestDirection(Direction.SOUTHEAST, false),
-        new TestDirection(Direction.EAST, true)
-    };
-
-    private static readonly TestDirection[] dpback_requirements = new TestDirection[] {
-        new TestDirection(Direction.WEST, false),
-        new TestDirection(Direction.SOUTHWEST, true),
-        new TestDirection(Direction.SOUTH, false),
-        new TestDirection(Direction.SOUTHWEST, false),
-        new TestDirection(Direction.WEST, true)
-    };
-
-    private static readonly TestDirection[] hfor_requirements = new TestDirection[] {
-        new TestDirection(Direction.WEST, false),
-        new TestDirection(Direction.SOUTHWEST, true),
-        new TestDirection(Direction.SOUTH, true),
-        new TestDirection(Direction.SOUTHEAST, true),
-        new TestDirection(Direction.EAST, false)
-    };
-
-    private static readonly TestDirection[] hback_requirements = new TestDirection[] {
-        new TestDirection(Direction.EAST, false),
-        new TestDirection(Direction.SOUTHEAST, true),
-        new TestDirection(Direction.SOUTH, true),
-        new TestDirection(Direction.SOUTHWEST, true),
-        new TestDirection(Direction.WEST, false)
-    };
-
-    private static readonly TestDirection[] doubleqfor_requirements = new TestDirection[] {
-        new TestDirection(Direction.SOUTH, false),
-        new TestDirection(Direction.SOUTHEAST, true),
-        new TestDirection(Direction.EAST, false),
-        new TestDirection(Direction.SOUTH, true),
-        new TestDirection(Direction.SOUTHEAST, true),
-        new TestDirection(Direction.EAST, true)
-    };
-
-    private static readonly TestDirection[] doubleqback_requirements = new TestDirection[] {
-        new TestDirection(Direction.SOUTH, false),
-        new TestDirection(Direction.SOUTHWEST, true),
-        new TestDirection(Direction.WEST, false),
-        new TestDirection(Direction.SOUTH, true),
-        new TestDirection(Direction.SOUTHWEST, true),
-        new TestDirection(Direction.WEST, true)
-    };
-
-    /*
-    private static readonly TestDirection[] hplus_requirements = new TestDirection[] {
-        new TestDirection(Direction.EAST, false),
-        new TestDirection(Direction.SOUTHEAST, true),
-        new TestDirection(Direction.SOUTH, false),
-        new TestDirection(Direction.SOUTHWEST, true),
-        new TestDirection(Direction.WEST, false),
-        new TestDirection(Direction.EAST, false)
-    };
-
-    private static readonly TestDirection[] althplus_requirements = new TestDirection[] {
-        new TestDirection(Direction.EAST, false),
-        new TestDirection(Direction.SOUTHEAST, false),
-        new TestDirection(Direction.SOUTH, true),
-        new TestDirection(Direction.SOUTHWEST, false),
-        new TestDirection(Direction.WEST, false),
-        new TestDirection(Direction.EAST, false)
-    };
-    */
-
     private static Direction CalcDirection(Vector2 input)
     {
         if (input == Vector2.zero)
@@ -144,16 +62,13 @@ public class MotionInput : MonoBehaviour
         };
     }
 
-    private bool TestForMotionInput(TestDirection[] requirements, List<DirectionRecord> inputs, int inputIndex, int validSkips)
+    private static bool TestForMotionInput(MotionCriteria criteria, List<DirectionRecord> inputs,
+                                           int inputIndex, int maxInputLength)
     {
-        if (inputIndex > inputs.Count)
-        {
-            return false;
-        }
-
-        int startIndex = inputIndex;
+        int endIndex = inputIndex;
         int skips = 0;
 
+        TestDirection[] requirements = criteria.directionList;
         for (int i = 1; i <= requirements.Length; i++)
         {
             if (inputIndex > inputs.Count) // end search if end of inputs is reached
@@ -169,7 +84,7 @@ public class MotionInput : MonoBehaviour
             {
                 skips++;
 
-                if (skips > validSkips)
+                if (skips > criteria.allowedSkips)
                 {
                     // print($"prints: {gameManager.currentFrame}");
                     return false;
@@ -181,51 +96,52 @@ public class MotionInput : MonoBehaviour
             }
         }
 
-        if (inputs[^startIndex].startFrame - inputs[^(inputIndex - 1)].startFrame >= maxInputLength)
+        if (inputs[^endIndex].startFrame - inputs[^(inputIndex - 1)].startFrame >= maxInputLength)
         {
             return false;
         }
 
-        // print(inputs[^startIndex].startFrame - inputs[^(inputIndex - 1)].startFrame);
+        // print(inputs[^endIndex].startFrame - inputs[^(inputIndex - 1)].startFrame);
         return true;
     }
 
-    private MotionType ReadMotionFromInputs(List<DirectionRecord> inputs, int startIndex)
+    private MotionType ReadMotionFromInputs(List<DirectionRecord> inputs, int startIndex,
+                                            int maxInputLength, int maxBufferLength)
     {
         if (gameManager.currentFrame - inputs[^startIndex].startFrame >= maxBufferLength)
         {
             return MotionType.NONE;
         }
 
-        if (TestForMotionInput(doubleqfor_requirements, inputs, startIndex, 2))
+        if (TestForMotionInput(MotionFormats.doubleqfor_requirements, inputs, startIndex, maxInputLength))
         {
             return MotionType.DOUBLEQFOR;
         }
-        else if (TestForMotionInput(doubleqback_requirements, inputs, startIndex, 2))
+        else if (TestForMotionInput(MotionFormats.doubleqback_requirements, inputs, startIndex, maxInputLength))
         {
             return MotionType.DOUBLEQBACK;
         }
-        else if (TestForMotionInput(hfor_requirements, inputs, startIndex, 1))
+        else if (TestForMotionInput(MotionFormats.hfor_requirements, inputs, startIndex, maxInputLength))
         {
             return MotionType.HFOR;
         }
-        else if (TestForMotionInput(hback_requirements, inputs, startIndex, 1))
+        else if (TestForMotionInput(MotionFormats.hback_requirements, inputs, startIndex, maxInputLength))
         {
             return MotionType.HBACK;
         }
-        else if (TestForMotionInput(dpfor_requirements, inputs, startIndex, 2))
+        else if (TestForMotionInput(MotionFormats.dpfor_requirements, inputs, startIndex, maxInputLength))
         {
             return MotionType.DPFOR;
         }
-        else if (TestForMotionInput(dpback_requirements, inputs, startIndex, 2))
+        else if (TestForMotionInput(MotionFormats.dpback_requirements, inputs, startIndex, maxInputLength))
         {
             return MotionType.DPBACK;
         }
-        else if (TestForMotionInput(qfor_requirements, inputs, startIndex, 0))
+        else if (TestForMotionInput(MotionFormats.qfor_requirements, inputs, startIndex, maxInputLength))
         {
             return MotionType.QFOR;
         }
-        else if (TestForMotionInput(qback_requirements, inputs, startIndex, 0))
+        else if (TestForMotionInput(MotionFormats.qback_requirements, inputs, startIndex, maxInputLength))
         {
             return MotionType.QBACK;
         }
@@ -235,26 +151,41 @@ public class MotionInput : MonoBehaviour
         }
     }
 
-    private MotionType ScanListForMotion(List<DirectionRecord> directions)
+    private MotionType ScanListForMotion(List<DirectionRecord> directions, MotionRecord prevMotion,
+                                         int maxInputLength, int maxBufferLength)
     {
-        MotionType motion;
+        //MotionType motion;
 
-        for (int i = 1; i <= maxBufferLength; i++)
+        //for (int i = 1; i <= maxBufferLength; i++)
+        //{
+        //    if (directions.Count < i)
+        //    {
+        //        // stop search if accessing directions[^i] would cause an out-of-bounds error
+        //        break;
+        //    }
+
+        //    motion = ReadMotionFromInputs(directions, i, maxInputLength, maxBufferLength);
+        //    if (motion != MotionType.NONE)
+        //    {
+        //        return motion;
+        //    }
+        //}
+
+        //// return NONE if no special motion type was detected
+        //return MotionType.NONE;
+
+        if (directions.Count == 0)
         {
-            if (directions.Count < i)
-            {
-                // return if accessing directions[^i] would cause an out-of-bounds error
-                return MotionType.NONE;
-            }
-
-            motion = ReadMotionFromInputs(inputRecord, i);
-            if (motion != MotionType.NONE)
-            {
-                return motion;
-            }
+            return MotionType.NONE;
         }
 
-        return MotionType.NONE;
+        MotionType motion = ReadMotionFromInputs(directions, 1, maxInputLength, maxBufferLength);
+        if (motion == MotionType.NONE && gameManager.currentFrame - prevMotion.startFrame < maxBufferLength)
+        {
+            return prevMotion.motion;
+        }
+
+        return motion;
     }
 
     private void OnMove(InputValue moveValue)
@@ -286,7 +217,7 @@ public class MotionInput : MonoBehaviour
             inputRecord.Add(new DirectionRecord(direction, gameManager.currentFrame));
         }
 
-        MotionType motion = ScanListForMotion(inputRecord);
+        MotionType motion = ScanListForMotion(inputRecord, userMotion, maxInputLength, maxBufferLength);
         if (motion != userMotion.motion)
         {
             userMotion = new MotionRecord(motion, gameManager.currentFrame);
@@ -307,55 +238,10 @@ public class MotionInput : MonoBehaviour
         */
 
         // print(inputRecord[^1]);
+        // print(userMotion);
 
         // print(direction);
         // print(gameManager.currentFrame);
         // print(ScanListForMotion(inputRecord));
-    }
-}
-
-public class TestDirection
-{
-    public Direction direction { get; }
-    public bool skippable { get; }
-
-    public TestDirection(Direction direction, bool skippable)
-    {
-        this.direction = direction;
-        this.skippable = skippable;
-    }
-}
-
-public class DirectionRecord
-{
-    public Direction direction { get; }
-    public int startFrame { get; }
-
-    public DirectionRecord(Direction direction, int startFrame)
-    {
-        this.direction = direction;
-        this.startFrame = startFrame;
-    }
-
-    public override string ToString()
-    {
-        return $"{direction}; frame {startFrame}";
-    }
-}
-
-public class MotionRecord
-{
-    public MotionType motion { get; }
-    public int startFrame { get; }
-
-    public MotionRecord(MotionType motion, int startFrame)
-    {
-        this.motion = motion;
-        this.startFrame = startFrame;
-    }
-
-    public override string ToString()
-    {
-        return $"{motion}; frame {startFrame}";
     }
 }
